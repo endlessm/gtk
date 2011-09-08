@@ -179,8 +179,8 @@ gdk_c_sources = 				\
 	gdkwindowimpl.c
 
 gdk_built_sources = 				\
-	gdkenumtypes.h				\
-	gdkenumtypes.c				\
+	$(srcdir)/gdkenumtypes.h				\
+	$(srcdir)/gdkenumtypes.c				\
 	gdkmarshalers.h 			\
 	gdkmarshalers.c				\
 	gdkresources.h				\
@@ -412,7 +412,7 @@ endif
 
 lib_LTLIBRARIES = libgdk-3.la
 
-MAINTAINERCLEANFILES = $(gdk_built_sources) stamp-gdkenumtypes.h
+MAINTAINERCLEANFILES = $(gdk_built_sources)
 EXTRA_DIST += \
 	$(gdk_built_sources)	\
 	fallback-c89.c
@@ -426,18 +426,15 @@ BUILT_SOURCES = \
 	$(gdk_built_sources)			\
 	gdkconfig.h
 
-gdkenumtypes.h: stamp-gdkenumtypes.h
-	@true
-stamp-gdkenumtypes.h: $(gdk_h_sources) gdkenumtypes.h.template
+gdkenumtypes.h: $(gdk_public_h_sources) $(srcdir)/gdkenumtypes.h.template
 	$(AM_V_GEN) ( cd $(srcdir) && $(GLIB_MKENUMS) --template gdkenumtypes.h.template \
 		$(gdk_h_sources) ) >> xgen-geth \
-	&& (cmp -s xgen-geth gdkenumtypes.h || cp xgen-geth gdkenumtypes.h ) \
-	&& rm -f xgen-geth \
-	&& echo timestamp > $(@F)
+	&& (cmp -s xgen-geth gdkenumtypes.h || cp xgen-geth $(srcdir)/gdkenumtypes.h ) \
+	&& rm -f xgen-geth 
 gdkenumtypes.c: $(gdk_h_sources) gdkenumtypes.c.template
 	$(AM_V_GEN) ( cd $(srcdir) && $(GLIB_MKENUMS) --template gdkenumtypes.c.template \
 		$(gdk_h_sources) ) > xgen-getc \
-	&& cp xgen-getc gdkenumtypes.c  \
+	&& cp xgen-getc $(srcdir)/gdkenumtypes.c  \
 	&& rm -f xgen-getc
 
 #

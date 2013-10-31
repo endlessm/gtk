@@ -30,6 +30,7 @@
 #include "gtkmarshalers.h"
 #include "gtkappchooserwidget.h"
 #include "gtkappchooserprivate.h"
+#include "gtkicontheme.h"
 #include "gtkliststore.h"
 #include "gtkcellrenderertext.h"
 #include "gtkcellrendererpixbuf.h"
@@ -526,6 +527,38 @@ compare_apps_func (gconstpointer a,
   return !g_app_info_equal (G_APP_INFO (a), G_APP_INFO (b));
 }
 
+static GIcon *
+get_sized_icon_for_app (GAppInfo *app)
+{
+  GIcon *icon;
+  GdkPixbuf *pixbuf;
+  GtkIconInfo *icon_info;
+
+  icon = g_app_info_get_icon (app);
+  pixbuf = NULL;
+
+  if (icon == NULL)
+    icon = g_themed_icon_new ("application-x-executable");
+  else
+    g_object_ref (icon);
+
+  icon_info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
+                                              icon,
+                                              16,
+                                              GTK_ICON_LOOKUP_GENERIC_FALLBACK |
+                                              GTK_ICON_LOOKUP_FORCE_SIZE);
+
+  if (icon_info != NULL)
+    {
+      pixbuf = gtk_icon_info_load_icon (icon_info, NULL);
+      g_object_unref (icon_info);
+    }
+
+  g_object_unref (icon);
+
+  return (pixbuf != NULL) ? G_ICON (pixbuf) : NULL;
+}
+
 static gboolean
 gtk_app_chooser_widget_add_section (GtkAppChooserWidget *self,
                                     const gchar         *heading_title,
@@ -535,7 +568,7 @@ gtk_app_chooser_widget_add_section (GtkAppChooserWidget *self,
                                     GList               *applications,
                                     GList               *exclude_apps)
 {
-  gboolean heading_added, unref_icon;
+  gboolean heading_added;
   GtkTreeIter iter;
   GAppInfo *app;
   gchar *app_string, *bold_string;
@@ -576,13 +609,7 @@ gtk_app_chooser_widget_add_section (GtkAppChooserWidget *self,
                                             g_app_info_get_name (app) != NULL ?
                                             g_app_info_get_name (app) : "");
 
-      icon = g_app_info_get_icon (app);
-      unref_icon = FALSE;
-      if (icon == NULL)
-        {
-          icon = g_themed_icon_new ("application-x-executable");
-          unref_icon = TRUE;
-        }
+      icon = get_sized_icon_for_app (app);
 
       gtk_list_store_append (self->priv->program_list_store, &iter);
       gtk_list_store_set (self->priv->program_list_store, &iter,
@@ -599,8 +626,7 @@ gtk_app_chooser_widget_add_section (GtkAppChooserWidget *self,
       retval = TRUE;
 
       g_free (app_string);
-      if (unref_icon)
-        g_object_unref (icon);
+      g_clear_object (&icon);
     }
 
   g_free (bold_string);
@@ -616,9 +642,7 @@ gtk_app_chooser_add_default (GtkAppChooserWidget *self,
   GtkTreeIter iter;
   GIcon *icon;
   gchar *string;
-  gboolean unref_icon;
 
-  unref_icon = FALSE;
   string = g_strdup_printf ("<b>%s</b>", _("Default Application"));
 
   gtk_list_store_append (self->priv->program_list_store, &iter);
@@ -634,12 +658,7 @@ gtk_app_chooser_add_default (GtkAppChooserWidget *self,
                                     g_app_info_get_name (app) != NULL ?
                                     g_app_info_get_name (app) : "");
 
-  icon = g_app_info_get_icon (app);
-  if (icon == NULL)
-    {
-      icon = g_themed_icon_new ("application-x-executable");
-      unref_icon = TRUE;
-    }
+  icon = get_sized_icon_for_app (app);
 
   gtk_list_store_append (self->priv->program_list_store, &iter);
   gtk_list_store_set (self->priv->program_list_store, &iter,
@@ -653,9 +672,7 @@ gtk_app_chooser_add_default (GtkAppChooserWidget *self,
                       -1);
 
   g_free (string);
-
-  if (unref_icon)
-    g_object_unref (icon);
+  g_object_unref (icon);
 }
 
 static void

@@ -59,6 +59,7 @@
 #include "gtkcellrenderertext.h"
 #include "gtkcombobox.h"
 #include "gtkdialog.h"
+#include "gtkicontheme.h"
 #include "gtkintl.h"
 #include "gtkmarshalers.h"
 
@@ -298,22 +299,38 @@ insert_one_application (GtkAppChooserButton *self,
                         GtkTreeIter         *iter)
 {
   GIcon *icon;
+  GdkPixbuf *pixbuf;
+  GtkIconInfo *icon_info;
 
   icon = g_app_info_get_icon (app);
+  pixbuf = NULL;
 
   if (icon == NULL)
     icon = g_themed_icon_new ("application-x-executable");
   else
     g_object_ref (icon);
 
+  icon_info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
+                                              icon,
+                                              16,
+                                              GTK_ICON_LOOKUP_GENERIC_FALLBACK |
+                                              GTK_ICON_LOOKUP_FORCE_SIZE);
+
+  if (icon_info != NULL)
+    {
+      pixbuf = gtk_icon_info_load_icon (icon_info, NULL);
+      g_object_unref (icon_info);
+    }
+
   gtk_list_store_set (self->priv->store, iter,
                       COLUMN_APP_INFO, app,
                       COLUMN_LABEL, g_app_info_get_name (app),
-                      COLUMN_ICON, icon,
+                      COLUMN_ICON, pixbuf,
                       COLUMN_CUSTOM, FALSE,
                       -1);
 
   g_object_unref (icon);
+  g_clear_object (&pixbuf);
 }
 
 static void

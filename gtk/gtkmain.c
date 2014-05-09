@@ -2130,9 +2130,14 @@ gtk_device_grab_add (GtkWidget *widget,
 {
   GtkWindowGroup *group;
   GtkWidget *old_grab_widget;
+  GdkWindow *toplevel;
 
   g_return_if_fail (GTK_IS_WIDGET (widget));
   g_return_if_fail (GDK_IS_DEVICE (device));
+  
+  toplevel = gdk_window_get_toplevel (gtk_widget_get_window (widget));
+  if (toplevel && gdk_window_get_window_type (toplevel) == GDK_WINDOW_OFFSCREEN)
+    return;
 
   group = gtk_main_get_window_group (widget);
   old_grab_widget = gtk_window_group_get_current_device_grab (group, device);

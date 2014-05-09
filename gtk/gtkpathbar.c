@@ -53,7 +53,6 @@ struct _GtkPathBarPrivate
 
   GList *button_list;
   GList *first_scrolled_button;
-  GList *fake_root;
   GtkWidget *up_slider_button;
   GtkWidget *down_slider_button;
   guint settings_signal_id;
@@ -77,7 +76,8 @@ typedef enum {
   NORMAL_BUTTON,
   ROOT_BUTTON,
   HOME_BUTTON,
-  DESKTOP_BUTTON
+  DESKTOP_BUTTON,
+  XDG_BUTTON
 } ButtonType;
 
 #define BUTTON_DATA(x) ((ButtonData *)(x))
@@ -97,6 +97,7 @@ struct _ButtonData
 {
   GtkWidget *button;
   ButtonType type;
+  gboolean is_root;
   char *dir_name;
   GFile *file;
   GtkWidget *image;
@@ -109,7 +110,7 @@ struct _ButtonData
  * All buttons in front of a fake root are automatically hidden when in a
  * directory below a fake root and replaced with the "<" arrow button.
  */
-#define BUTTON_IS_FAKE_ROOT(button) ((button)->type == HOME_BUTTON)
+#define BUTTON_IS_FAKE_ROOT(button) ((button)->is_root)
 
 G_DEFINE_TYPE_WITH_PRIVATE (GtkPathBar, gtk_path_bar, GTK_TYPE_CONTAINER)
 
@@ -165,6 +166,14 @@ static void gtk_path_bar_check_icon_theme         (GtkPathBar       *path_bar);
 static void gtk_path_bar_update_button_appearance (GtkPathBar       *path_bar,
 						   ButtonData       *button_data,
 						   gboolean          current_dir);
+
+static const GUserDirectory default_xdg_dirs[] = {
+  G_USER_DIRECTORY_DOCUMENTS,
+  G_USER_DIRECTORY_PICTURES,
+  G_USER_DIRECTORY_VIDEOS,
+  G_USER_DIRECTORY_MUSIC,
+  G_USER_DIRECTORY_DOWNLOAD
+};
 
 static void
 on_slider_unmap (GtkWidget  *widget,
@@ -533,7 +542,7 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
   GtkTextDirection direction;
   GtkAllocation child_allocation;
   GList *list, *first_button;
-  gint width;
+  gint width = 0;
   gint allocation_width;
   gboolean need_sliders = FALSE;
   gint up_slider_offset = 0;
@@ -555,12 +564,6 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
   direction = gtk_widget_get_direction (widget);
   allocation_width = allocation->width;
 
-  /* First, we check to see if we need the scrollbars. */
-  if (path_bar->priv->fake_root)
-    width = path_bar->priv->slider_width;
-  else
-    width = 0;
-
   for (list = path_bar->priv->button_list; list; list = list->next)
     {
       child = BUTTON_DATA (list->data)->button;
@@ -568,16 +571,11 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
       gtk_widget_get_preferred_size (child, &child_requisition, NULL);
 
       width += child_requisition.width;
-      if (list == path_bar->priv->fake_root)
-	break;
     }
 
   if (width <= allocation_width)
     {
-      if (path_bar->priv->fake_root)
-	first_button = path_bar->priv->fake_root;
-      else
-	first_button = g_list_last (path_bar->priv->button_list);
+      first_button = g_list_last (path_bar->priv->button_list);
     }
   else
     {
@@ -608,8 +606,6 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
 
 	  if (width + child_requisition.width + slider_space > allocation_width)
 	    reached_end = TRUE;
-	  else if (list == path_bar->priv->fake_root)
-	    break;
 	  else
 	    width += child_requisition.width;
 
@@ -631,8 +627,6 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
 	  else
 	    {
 	      width += child_requisition.width;
-	      if (first_button == path_bar->priv->fake_root)
-		break;
 	      first_button = first_button->next;
 	    }
 	}
@@ -645,7 +639,7 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
   if (direction == GTK_TEXT_DIR_RTL)
     {
       child_allocation.x = allocation->x + allocation->width;
-      if (need_sliders || path_bar->priv->fake_root)
+      if (need_sliders)
 	{
 	  child_allocation.x -= path_bar->priv->slider_width;
 	  up_slider_offset = allocation->width - path_bar->priv->slider_width;
@@ -654,7 +648,7 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
   else
     {
       child_allocation.x = allocation->x;
-      if (need_sliders || path_bar->priv->fake_root)
+      if (need_sliders)
 	{
 	  up_slider_offset = 0;
 	  child_allocation.x += path_bar->priv->slider_width;
@@ -729,7 +723,7 @@ gtk_path_bar_size_allocate (GtkWidget     *widget,
       gtk_widget_set_child_visible (child, FALSE);
     }
 
-  if (need_sliders || path_bar->priv->fake_root)
+  if (need_sliders)
     {
       child_allocation.width = path_bar->priv->slider_width;
       child_allocation.x = up_slider_offset + allocation->x;
@@ -1053,8 +1047,6 @@ gtk_path_bar_scroll_up (GtkPathBar *path_bar)
     {
       if (list->prev && gtk_widget_get_child_visible (BUTTON_DATA (list->prev->data)->button))
 	{
-	  if (list->prev == path_bar->priv->fake_root)
-	    path_bar->priv->fake_root = NULL;
 	  path_bar->priv->first_scrolled_button = list;
 	  return;
 	}
@@ -1306,7 +1298,6 @@ gtk_path_bar_clear_buttons (GtkPathBar *path_bar)
       gtk_container_remove (GTK_CONTAINER (path_bar), BUTTON_DATA (path_bar->priv->button_list->data)->button);
     }
   path_bar->priv->first_scrolled_button = NULL;
-  path_bar->priv->fake_root = NULL;
 }
 
 static void
@@ -1538,6 +1529,57 @@ gtk_path_bar_update_button_appearance (GtkPathBar *path_bar,
     }
 }
 
+static GList *
+get_default_xdg_directories (void)
+{
+  GList *dirs = NULL;
+  gint idx;
+  const gchar *path;
+
+  for (idx = 0; idx < G_N_ELEMENTS (default_xdg_dirs); idx++)
+    {
+      path = g_get_user_special_dir (default_xdg_dirs[idx]);
+      /* xdg resets special dirs to the home directory in case
+       * it's not finding what it expects. We don't want the home
+       * to be added multiple times in that weird configuration.
+       */
+      if (path == NULL
+          || g_strcmp0 (path, g_get_home_dir ()) == 0
+          || g_list_find_custom (dirs, path, (GCompareFunc) g_strcmp0) != NULL)
+            continue;
+
+      dirs = g_list_prepend (dirs, (gpointer) path);
+    }
+
+  return dirs;
+}
+
+static gboolean
+is_default_xdg_directory (GFile *dir)
+{
+  GList *default_dirs;
+  GList *l;
+  const gchar *pathdir;
+  GFile *file_dir;
+  gboolean res = FALSE;
+
+  default_dirs = get_default_xdg_directories ();
+  for (l = default_dirs; l != NULL; l = g_list_next (l))
+    {
+      pathdir = (const gchar *) l->data;
+      file_dir = g_file_new_for_path (pathdir);
+      res = g_file_equal (dir, file_dir);
+      g_object_unref (file_dir);
+
+      if (res)
+        break;
+    }
+
+  g_list_free (default_dirs);
+
+  return res;
+}
+
 static ButtonType
 find_button_type (GtkPathBar  *path_bar,
 		  GFile       *file)
@@ -1551,6 +1593,8 @@ find_button_type (GtkPathBar  *path_bar,
   if (path_bar->priv->desktop_file != NULL &&
       g_file_equal (file, path_bar->priv->desktop_file))
     return DESKTOP_BUTTON;
+  if (is_default_xdg_directory (file))
+    return XDG_BUTTON;
 
  return NORMAL_BUTTON;
 }
@@ -1607,12 +1651,15 @@ make_directory_button (GtkPathBar  *path_bar,
       break;
     case HOME_BUTTON:
     case DESKTOP_BUTTON:
+      button_data->is_root = TRUE;
       button_data->image = gtk_image_new ();
       button_data->label = gtk_label_new (NULL);
       child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
       gtk_box_pack_start (GTK_BOX (child), button_data->image, FALSE, FALSE, 0);
       gtk_box_pack_start (GTK_BOX (child), button_data->label, FALSE, FALSE, 0);
       break;
+    case XDG_BUTTON:
+      button_data->is_root = TRUE;
     case NORMAL_BUTTON:
     default:
       button_data->label = gtk_label_new (NULL);
@@ -1652,7 +1699,6 @@ gtk_path_bar_check_parent_path (GtkPathBar         *path_bar,
 {
   GList *list;
   GList *current_path = NULL;
-  gboolean need_new_fake_root = FALSE;
 
   for (list = path_bar->priv->button_list; list; list = list->next)
     {
@@ -1664,28 +1710,10 @@ gtk_path_bar_check_parent_path (GtkPathBar         *path_bar,
 	  current_path = list;
 	  break;
 	}
-      if (list == path_bar->priv->fake_root)
-	need_new_fake_root = TRUE;
     }
 
   if (current_path)
     {
-      if (need_new_fake_root)
-	{
-	  path_bar->priv->fake_root = NULL;
-	  for (list = current_path; list; list = list->next)
-	    {
-	      ButtonData *button_data;
-
-	      button_data = list->data;
-	      if (BUTTON_IS_FAKE_ROOT (button_data))
-		{
-		  path_bar->priv->fake_root = list;
-		  break;
-		}
-	    }
-	}
-
       for (list = path_bar->priv->button_list; list; list = list->next)
 	{
 	  gtk_path_bar_update_button_appearance (path_bar,
@@ -1711,7 +1739,6 @@ struct SetFileInfo
   GFile *parent_file;
   GtkPathBar *path_bar;
   GList *new_buttons;
-  GList *fake_root;
   gboolean first_directory;
 };
 
@@ -1725,7 +1752,6 @@ gtk_path_bar_set_file_finish (struct SetFileInfo *info,
 
       gtk_path_bar_clear_buttons (info->path_bar);
       info->path_bar->priv->button_list = g_list_reverse (info->new_buttons);
-      info->path_bar->priv->fake_root = info->fake_root;
 
       for (l = info->path_bar->priv->button_list; l; l = l->next)
 	{
@@ -1793,11 +1819,15 @@ gtk_path_bar_get_info_callback (GCancellable *cancellable,
                                        file_info->file,
 				       file_info->first_directory, is_hidden);
   g_object_unref (file_info->file);
+  file_info->file = NULL;
 
   file_info->new_buttons = g_list_prepend (file_info->new_buttons, button_data);
 
   if (BUTTON_IS_FAKE_ROOT (button_data))
-    file_info->fake_root = file_info->new_buttons;
+    {
+      gtk_path_bar_set_file_finish (file_info, TRUE);
+      return;
+    }
 
   /* We have assigned the info for the innermost button, i.e. the deepest directory.
    * Now, go on to fetch the info for this directory's parent.

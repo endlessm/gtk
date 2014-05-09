@@ -147,10 +147,6 @@ struct _GtkPlacesSidebar {
   GtkWidget *popup_menu;
   GSList *shortcuts;
 
-  GDBusProxy *hostnamed_proxy;
-  GCancellable *hostnamed_cancellable;
-  gchar *hostname;
-
   GtkPlacesOpenFlags open_flags;
 
   DropState drop_state;
@@ -1026,17 +1022,6 @@ update_places (GtkPlacesSidebar *sidebar)
       g_object_unref (volume);
     }
   g_list_free (volumes);
-
-  /* file system root */
-
-  mount_uri = "file:///"; /* No need to strdup */
-  icon = g_themed_icon_new_with_default_fallbacks (ICON_NAME_FILESYSTEM);
-  add_place (sidebar, PLACES_BUILT_IN,
-             SECTION_DEVICES,
-             sidebar->hostname, icon, mount_uri,
-             NULL, NULL, NULL, 0,
-             _("Open the contents of the file system"));
-  g_object_unref (icon);
 
   /* add mounts that has no volume (/etc/mtab mounts, ftp, sftp,...) */
   mounts = g_volume_monitor_get_mounts (volume_monitor);
@@ -3591,63 +3576,6 @@ places_sidebar_sort_func (GtkTreeModel *model,
 }
 
 static void
-update_hostname (GtkPlacesSidebar *sidebar)
-{
-  GVariant *variant;
-  gsize len;
-  const gchar *hostname;
-
-  if (sidebar->hostnamed_proxy == NULL)
-    return;
-
-  variant = g_dbus_proxy_get_cached_property (sidebar->hostnamed_proxy,
-                                              "PrettyHostname");
-  if (variant == NULL)
-    return;
-
-  hostname = g_variant_get_string (variant, &len);
-  if (len > 0 &&
-      g_strcmp0 (sidebar->hostname, hostname) != 0)
-    {
-      g_free (sidebar->hostname);
-      sidebar->hostname = g_strdup (hostname);
-      update_places (sidebar);
-    }
-
-  g_variant_unref (variant);
-}
-
-static void
-hostname_proxy_new_cb (GObject      *source_object,
-                       GAsyncResult *res,
-                       gpointer      user_data)
-{
-  GtkPlacesSidebar *sidebar = user_data;
-  GError *error = NULL;
-  GDBusProxy *proxy;
-
-  proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-  if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-    return;
-
-  sidebar->hostnamed_proxy = proxy;
-  g_clear_object (&sidebar->hostnamed_cancellable);
-
-  if (error != NULL)
-    {
-      g_debug ("Failed to create D-Bus proxy: %s", error->message);
-      g_error_free (error);
-      return;
-    }
-
-  g_signal_connect_swapped (sidebar->hostnamed_proxy,
-                            "g-properties-changed",
-                            G_CALLBACK (update_hostname),
-                            sidebar);
-  update_hostname (sidebar);
-}
-
-static void
 create_volume_monitor (GtkPlacesSidebar *sidebar)
 {
   g_assert (sidebar->volume_monitor == NULL);
@@ -3899,18 +3827,6 @@ gtk_places_sidebar_init (GtkPlacesSidebar *sidebar)
 
   gtk_tree_view_set_activate_on_single_click (sidebar->tree_view, TRUE);
 
-  sidebar->hostname = g_strdup (_("Computer"));
-  sidebar->hostnamed_cancellable = g_cancellable_new ();
-  g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
-                            G_DBUS_PROXY_FLAGS_GET_INVALIDATED_PROPERTIES,
-                            NULL,
-                            "org.freedesktop.hostname1",
-                            "/org/freedesktop/hostname1",
-                            "org.freedesktop.hostname1",
-                            sidebar->hostnamed_cancellable,
-                            hostname_proxy_new_cb,
-                            sidebar);
-
   sidebar->drop_state = DROP_STATE_NORMAL;
   sidebar->new_bookmark_index = -1;
 
@@ -4044,16 +3960,6 @@ gtk_places_sidebar_dispose (GObject *object)
                                             update_places, sidebar);
       g_clear_object (&sidebar->volume_monitor);
     }
-
-  if (sidebar->hostnamed_cancellable != NULL)
-    {
-      g_cancellable_cancel (sidebar->hostnamed_cancellable);
-      g_clear_object (&sidebar->hostnamed_cancellable);
-    }
-
-  g_clear_object (&sidebar->hostnamed_proxy);
-  g_free (sidebar->hostname);
-  sidebar->hostname = NULL;
 
   if (sidebar->gtk_settings)
     {

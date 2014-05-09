@@ -150,10 +150,6 @@ struct _GtkPlacesSidebar {
   GtkWidget *popup_menu;
   GSList *shortcuts;
 
-  GDBusProxy *hostnamed_proxy;
-  GCancellable *hostnamed_cancellable;
-  gchar *hostname;
-
   GtkPlacesOpenFlags open_flags;
 
   DropState drop_state;
@@ -1174,17 +1170,6 @@ update_places (GtkPlacesSidebar *sidebar)
       g_object_unref (volume);
     }
   g_list_free (volumes);
-
-  /* file system root */
-
-  mount_uri = "file:///"; /* No need to strdup */
-  icon = g_themed_icon_new_with_default_fallbacks (ICON_NAME_FILESYSTEM);
-  add_place (sidebar, PLACES_BUILT_IN,
-             SECTION_DEVICES,
-             sidebar->hostname, icon, mount_uri,
-             NULL, NULL, NULL, 0,
-             _("Open the contents of the file system"));
-  g_object_unref (icon);
 
   /* add mounts that has no volume (/etc/mtab mounts, ftp, sftp,...) */
   mounts = g_volume_monitor_get_mounts (volume_monitor);
@@ -4149,18 +4134,6 @@ gtk_places_sidebar_init (GtkPlacesSidebar *sidebar)
 
   gtk_tree_view_set_activate_on_single_click (sidebar->tree_view, TRUE);
 
-  sidebar->hostname = g_strdup (_("Computer"));
-  sidebar->hostnamed_cancellable = g_cancellable_new ();
-  g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
-                            G_DBUS_PROXY_FLAGS_GET_INVALIDATED_PROPERTIES,
-                            NULL,
-                            "org.freedesktop.hostname1",
-                            "/org/freedesktop/hostname1",
-                            "org.freedesktop.hostname1",
-                            sidebar->hostnamed_cancellable,
-                            hostname_proxy_new_cb,
-                            sidebar);
-
   sidebar->drop_state = DROP_STATE_NORMAL;
   sidebar->new_bookmark_index = -1;
 
@@ -4309,16 +4282,6 @@ gtk_places_sidebar_dispose (GObject *object)
                                             update_places, sidebar);
       g_clear_object (&sidebar->volume_monitor);
     }
-
-  if (sidebar->hostnamed_cancellable != NULL)
-    {
-      g_cancellable_cancel (sidebar->hostnamed_cancellable);
-      g_clear_object (&sidebar->hostnamed_cancellable);
-    }
-
-  g_clear_object (&sidebar->hostnamed_proxy);
-  g_free (sidebar->hostname);
-  sidebar->hostname = NULL;
 
   if (sidebar->gtk_settings)
     {

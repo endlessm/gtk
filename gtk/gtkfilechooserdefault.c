@@ -166,12 +166,14 @@ typedef enum {
 typedef enum {
   OPERATION_MODE_BROWSE,
   OPERATION_MODE_SEARCH,
-  OPERATION_MODE_RECENT
+  OPERATION_MODE_RECENT,
+  OPERATION_MODE_DOCUMENTS
 } OperationMode;
 
 typedef enum {
   STARTUP_MODE_RECENT,
-  STARTUP_MODE_CWD
+  STARTUP_MODE_CWD,
+  STARTUP_MODE_DOCUMENTS,
 } StartupMode;
 
 typedef struct {
@@ -341,8 +343,8 @@ enum {
   LOCATION_POPUP_ON_PASTE,
   UP_FOLDER,
   DOWN_FOLDER,
-  HOME_FOLDER,
   DESKTOP_FOLDER,
+  DOCUMENTS_FOLDER,
   QUICK_BOOKMARK,
   LOCATION_TOGGLE_POPUP,
   SHOW_HIDDEN,
@@ -475,16 +477,16 @@ static void location_popup_handler  (GtkFileChooserDefault *impl,
 				     const gchar           *path);
 static void location_popup_on_paste_handler (GtkFileChooserDefault *impl);
 static void location_toggle_popup_handler   (GtkFileChooserDefault *impl);
-static void up_folder_handler       (GtkFileChooserDefault *impl);
-static void down_folder_handler     (GtkFileChooserDefault *impl);
-static void home_folder_handler     (GtkFileChooserDefault *impl);
-static void desktop_folder_handler  (GtkFileChooserDefault *impl);
-static void quick_bookmark_handler  (GtkFileChooserDefault *impl,
-				     gint                   bookmark_index);
-static void show_hidden_handler     (GtkFileChooserDefault *impl);
-static void search_shortcut_handler (GtkFileChooserDefault *impl);
-static void recent_shortcut_handler (GtkFileChooserDefault *impl);
-static void update_appearance       (GtkFileChooserDefault *impl);
+static void up_folder_handler        (GtkFileChooserDefault *impl);
+static void down_folder_handler      (GtkFileChooserDefault *impl);
+static void desktop_folder_handler   (GtkFileChooserDefault *impl);
+static void documents_folder_handler (GtkFileChooserDefault *impl);
+static void quick_bookmark_handler   (GtkFileChooserDefault *impl,
+				      gint                   bookmark_index);
+static void show_hidden_handler      (GtkFileChooserDefault *impl);
+static void search_shortcut_handler  (GtkFileChooserDefault *impl);
+static void recent_shortcut_handler  (GtkFileChooserDefault *impl);
+static void update_appearance        (GtkFileChooserDefault *impl);
 
 static void operation_mode_set (GtkFileChooserDefault *impl, OperationMode mode);
 
@@ -2391,22 +2393,6 @@ set_extra_widget (GtkFileChooserDefault *impl,
 }
 
 static void
-switch_to_home_dir (GtkFileChooserDefault *impl)
-{
-  const gchar *home = g_get_home_dir ();
-  GFile *home_file;
-
-  if (home == NULL)
-    return;
-
-  home_file = g_file_new_for_path (home);
-
-  gtk_file_chooser_set_current_folder_file (GTK_FILE_CHOOSER (impl), home_file, NULL); /* NULL-GError */
-
-  g_object_unref (home_file);
-}
-
-static void
 set_local_only (GtkFileChooserDefault *impl,
 		gboolean               local_only)
 {
@@ -2428,7 +2414,7 @@ set_local_only (GtkFileChooserDefault *impl,
 	   * back to a local folder, but it's really up to the app to not cause
 	   * such a situation, so we ignore errors.
 	   */
-	  switch_to_home_dir (impl);
+          documents_folder_handler (impl);
 	}
     }
 }
@@ -2629,6 +2615,9 @@ operation_mode_stop (GtkFileChooserDefault *impl, OperationMode mode)
       recent_clear_model (impl, TRUE);
       break;
 
+    case OPERATION_MODE_DOCUMENTS:
+      break;
+
     default:
       g_assert_not_reached ();
     }
@@ -2683,6 +2672,12 @@ operation_mode_set_recent (GtkFileChooserDefault *impl)
 }
 
 static void
+operation_mode_set_documents (GtkFileChooserDefault *impl)
+{
+  documents_folder_handler (impl);
+}
+
+static void
 operation_mode_set (GtkFileChooserDefault *impl, OperationMode mode)
 {
   GtkFileChooserDefaultPrivate *priv = impl->priv;
@@ -2707,6 +2702,10 @@ operation_mode_set (GtkFileChooserDefault *impl, OperationMode mode)
       file = g_file_new_for_uri ("recent:///");
       gtk_places_sidebar_set_location (GTK_PLACES_SIDEBAR (priv->places_sidebar), file);
       g_object_unref (file);
+      break;
+
+    case OPERATION_MODE_DOCUMENTS:
+      operation_mode_set_documents (impl);
       break;
 
     default:
@@ -3355,6 +3354,10 @@ set_startup_mode (GtkFileChooserDefault *impl)
 
     case STARTUP_MODE_CWD:
       switch_to_cwd (impl);
+      break;
+
+    case STARTUP_MODE_DOCUMENTS:
+      operation_mode_set (impl, OPERATION_MODE_DOCUMENTS);
       break;
 
     default:
@@ -7186,13 +7189,6 @@ down_folder_handler (GtkFileChooserDefault *impl)
   _gtk_path_bar_down (GTK_PATH_BAR (priv->browse_path_bar));
 }
 
-/* Handler for the "home-folder" keybinding signal */
-static void
-home_folder_handler (GtkFileChooserDefault *impl)
-{
-  switch_to_home_dir (impl);
-}
-
 /* Handler for the "desktop-folder" keybinding signal */
 static void
 desktop_folder_handler (GtkFileChooserDefault *impl)
@@ -7200,6 +7196,23 @@ desktop_folder_handler (GtkFileChooserDefault *impl)
   const char *name;
 
   name = g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP);
+  /* "To disable a directory, point it to the homedir."
+   * See http://freedesktop.org/wiki/Software/xdg-user-dirs
+   **/
+  if (!g_strcmp0 (name, g_get_home_dir ())) {
+    return;
+  }
+
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (impl), name);
+}
+
+/* Handler for the "documents-folder" keybinding signal */
+static void
+documents_folder_handler (GtkFileChooserDefault *impl)
+{
+  const char *name;
+
+  name = g_get_user_special_dir (G_USER_DIRECTORY_DOCUMENTS);
   /* "To disable a directory, point it to the homedir."
    * See http://freedesktop.org/wiki/Software/xdg-user-dirs
    **/
@@ -7343,20 +7356,20 @@ _gtk_file_chooser_default_class_init (GtkFileChooserDefaultClass *class)
                                 _gtk_marshal_VOID__VOID,
                                 G_TYPE_NONE, 0);
 
-  signals[HOME_FOLDER] =
-    g_signal_new_class_handler (I_("home-folder"),
-                                G_OBJECT_CLASS_TYPE (class),
-                                G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-                                G_CALLBACK (home_folder_handler),
-                                NULL, NULL,
-                                _gtk_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
-
   signals[DESKTOP_FOLDER] =
     g_signal_new_class_handler (I_("desktop-folder"),
                                 G_OBJECT_CLASS_TYPE (class),
                                 G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
                                 G_CALLBACK (desktop_folder_handler),
+                                NULL, NULL,
+                                _gtk_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
+
+  signals[DOCUMENTS_FOLDER] =
+    g_signal_new_class_handler (I_("documents-folder"),
+                                G_OBJECT_CLASS_TYPE (class),
+                                G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+                                G_CALLBACK (documents_folder_handler),
                                 NULL, NULL,
                                 _gtk_marshal_VOID__VOID,
                                 G_TYPE_NONE, 0);
@@ -7442,11 +7455,11 @@ _gtk_file_chooser_default_class_init (GtkFileChooserDefaultClass *class)
 
   gtk_binding_entry_add_signal (binding_set,
 				GDK_KEY_Home, GDK_MOD1_MASK,
-				"home-folder",
+				"documents-folder",
 				0);
   gtk_binding_entry_add_signal (binding_set,
 				GDK_KEY_KP_Home, GDK_MOD1_MASK,
-				"home-folder",
+				"documents-folder",
 				0);
   gtk_binding_entry_add_signal (binding_set,
 				GDK_KEY_d, GDK_MOD1_MASK,

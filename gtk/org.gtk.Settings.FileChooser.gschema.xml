@@ -36,6 +36,7 @@
   <enum id='org.gtk.Settings.FileChooser.StartupMode'>
     <value nick='recent' value='0'/>
     <value nick='cwd' value='1'/>
+    <value nick='documents' value='2'/>
   </enum>
 
   <schema id='org.gtk.Settings.FileChooser' path='/org/gtk/settings/file-chooser/'>
@@ -96,7 +97,7 @@
       </description>
     </key>
     <key name='startup-mode' enum='org.gtk.Settings.FileChooser.StartupMode'>
-      <default>'recent'</default>
+      <default>'documents'</default>
       <description>
 	Either "recent" or "cwd"; controls whether the file chooser
 	starts up showing the list of recently-used files, or the

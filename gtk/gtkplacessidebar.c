@@ -246,6 +246,7 @@ enum {
 };
 
 /* Names for themed icons */
+#define ICON_NAME_HOME     "user-home-symbolic"
 #define ICON_NAME_DESKTOP  "user-desktop-symbolic"
 #define ICON_NAME_FILESYSTEM     "drive-harddisk-symbolic"
 #define ICON_NAME_EJECT    "media-eject-symbolic"
@@ -820,6 +821,17 @@ update_places (GtkPlacesSidebar *sidebar)
                  _("Recent files"));
       g_object_unref (icon);
     }
+
+  /* home folder */
+  home_uri = get_home_directory_uri ();
+  icon = g_themed_icon_new_with_default_fallbacks (ICON_NAME_HOME);
+  add_place (sidebar, PLACES_BUILT_IN,
+             SECTION_COMPUTER,
+             _("Home"), icon, home_uri,
+             NULL, NULL, NULL, 0,
+             _("Open your personal folder"));
+  g_object_unref (icon);
+  g_free (home_uri);
 
   /* desktop */
   if (sidebar->show_desktop)

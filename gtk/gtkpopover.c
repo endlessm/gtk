@@ -203,6 +203,8 @@ gtk_popover_dispose (GObject *object)
 
   g_clear_pointer (&priv->tracker, gtk_menu_tracker_free);
 
+  gtk_widget_set_visible (GTK_WIDGET (object), FALSE);
+
   if (priv->window)
     _gtk_window_remove_popover (priv->window, GTK_WIDGET (object));
 
@@ -217,7 +219,6 @@ gtk_popover_dispose (GObject *object)
       priv->prev_focus_widget = NULL;
     }
 
-  gtk_widget_set_visible (GTK_WIDGET (object), FALSE);
   G_OBJECT_CLASS (gtk_popover_parent_class)->dispose (object);
 }
 

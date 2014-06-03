@@ -1,3 +1,13 @@
+gtk+3.0 (3.12.2-1endless0) eos; urgency=low
+
+  * debian/*: Incorporate changes to Debian packaging from Debian's 3.12.2-1,
+    taken from
+    http://ftp.de.debian.org/debian/pool/main/g/gtk+3.0/gtk+3.0_3.12.2-1.debian.tar.xz
+    Distro patches not included.
+    [endlessm/eos-shell#2389]
+
+ -- Philip Chimento <philip@endlessm.com>  Tue, 03 Jun 2014 15:35:06 -0600
+
 gtk+3.0 (3.10.2-1endless6) eos; urgency=low
 
   * debian/patches/072-entry-consider-ascent-and-descent-when-requesting-he.patch:

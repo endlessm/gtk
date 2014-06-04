@@ -9,9 +9,13 @@ include /usr/share/cdbs/1/rules/autoreconf.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/utils.mk
 include /usr/share/cdbs/1/class/gnome.mk
+include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
 include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
 
 GNOME_MODULE = gtk+
+
+# Enable parallel build support
+DEB_BUILD_PARALLEL = 1
 
 # Ensure the build aborts when there are still references to undefined symbols
 # currently fails at least in the im-multipress im module
@@ -66,8 +70,14 @@ DEB_CONFIGURE_FLAGS_shared = \
 			--enable-gtk-doc \
 			--enable-shared \
 			--enable-introspection \
-			--enable-colord \
+			--enable-cloudprint \
 			--disable-static
+
+ifeq (,$(filter stage1,$(DEB_BUILD_PROFILES)))
+DEB_CONFIGURE_FLAGS_shared += --enable-colord
+else
+DEB_CONFIGURE_FLAGS_shared += --disable-colord
+endif
 
 ifeq (linux,$(DEB_HOST_ARCH_OS))
 DEB_CONFIGURE_FLAGS_shared += --enable-wayland-backend
@@ -80,6 +90,7 @@ DEB_CONFIGURE_FLAGS_shared_udeb = \
 			--disable-wayland-backend \
 			--enable-x11-backend \
 			--disable-introspection \
+			--disable-cloudprint \
 			--disable-colord \
 			--disable-xcomposite \
 			--disable-xdamage \

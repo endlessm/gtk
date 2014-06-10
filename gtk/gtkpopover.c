@@ -203,6 +203,8 @@ gtk_popover_dispose (GObject *object)
 
   g_clear_pointer (&priv->tracker, gtk_menu_tracker_free);
 
+  gtk_widget_set_visible (GTK_WIDGET (object), FALSE);
+
   if (priv->window)
     _gtk_window_remove_popover (priv->window, GTK_WIDGET (object));
 
@@ -217,7 +219,6 @@ gtk_popover_dispose (GObject *object)
       priv->prev_focus_widget = NULL;
     }
 
-  gtk_widget_set_visible (GTK_WIDGET (object), FALSE);
   G_OBJECT_CLASS (gtk_popover_parent_class)->dispose (object);
 }
 
@@ -309,9 +310,9 @@ window_set_focus (GtkWindow  *window,
 {
   GtkPopoverPrivate *priv = gtk_popover_get_instance_private (popover);
 
-  if (priv->modal &&
+  if (priv->modal && widget &&
       gtk_widget_is_drawable (GTK_WIDGET (popover)) &&
-      (!widget || !gtk_widget_is_ancestor (widget, GTK_WIDGET (popover))))
+      !gtk_widget_is_ancestor (widget, GTK_WIDGET (popover)))
     gtk_widget_hide (GTK_WIDGET (popover));
 }
 
@@ -1177,12 +1178,14 @@ gtk_popover_button_release (GtkWidget      *widget,
 			    GdkEventButton *event)
 {
   GtkPopover *popover = GTK_POPOVER (widget);
-  GtkWidget *child;
+  GtkWidget *child, *event_widget;
 
   child = gtk_bin_get_child (GTK_BIN (widget));
 
   if (!popover->priv->button_pressed)
     return GDK_EVENT_PROPAGATE;
+
+  event_widget = gtk_get_event_widget ((GdkEvent *) event);
 
   if (child && event->window == gtk_widget_get_window (widget))
     {
@@ -1196,7 +1199,7 @@ gtk_popover_button_release (GtkWidget      *widget,
           event->y > child_alloc.y + child_alloc.height)
         gtk_widget_hide (widget);
     }
-  else
+  else if (!gtk_widget_is_ancestor (event_widget, widget))
     gtk_widget_hide (widget);
 
   return GDK_EVENT_PROPAGATE;

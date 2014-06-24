@@ -594,6 +594,10 @@ gtk_entry_completion_constructor (GType                  type,
 
   /* pack it all */
   priv->popup_window = gtk_window_new (GTK_WINDOW_POPUP);
+  GdkScreen *screen = gtk_widget_get_screen (priv->popup_window);
+  GdkVisual *visual = gdk_screen_get_rgba_visual (screen);
+  if (visual)
+    gtk_widget_set_visual (priv->popup_window, visual);
   gtk_window_set_resizable (GTK_WINDOW (priv->popup_window), FALSE);
   gtk_window_set_type_hint (GTK_WINDOW(priv->popup_window),
                             GDK_WINDOW_TYPE_HINT_COMBO);

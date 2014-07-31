@@ -387,9 +387,9 @@ _gtk_css_shadow_value_paint_layout (const GtkCssValue *shadow,
                      _gtk_css_number_value_get (shadow->hoffset, 0),
                      _gtk_css_number_value_get (shadow->voffset, 0));
 
+  gdk_cairo_set_source_rgba (cr, _gtk_css_rgba_value_get_rgba (shadow->color));
   cr = gtk_css_shadow_value_start_drawing (shadow, cr);
 
-  gdk_cairo_set_source_rgba (cr, _gtk_css_rgba_value_get_rgba (shadow->color));
   _gtk_pango_fill_layout (cr, layout);
 
   cr = gtk_css_shadow_value_finish_drawing (shadow, cr);
@@ -411,9 +411,8 @@ _gtk_css_shadow_value_paint_icon (const GtkCssValue *shadow,
   cairo_save (cr);
   pattern = cairo_pattern_reference (cairo_get_source (cr));
 
-  cr = gtk_css_shadow_value_start_drawing (shadow, cr);
-
   gdk_cairo_set_source_rgba (cr, _gtk_css_rgba_value_get_rgba (shadow->color));
+  cr = gtk_css_shadow_value_start_drawing (shadow, cr);
 
   cairo_translate (cr,
                    _gtk_css_number_value_get (shadow->hoffset, 0),
@@ -436,14 +435,13 @@ _gtk_css_shadow_value_paint_spinner (const GtkCssValue *shadow,
 
   cairo_save (cr);
 
+  gdk_cairo_set_source_rgba (cr, _gtk_css_rgba_value_get_rgba (shadow->color));
   cr = gtk_css_shadow_value_start_drawing (shadow, cr);
 
   cairo_translate (cr,
                    _gtk_css_number_value_get (shadow->hoffset, 0),
                    _gtk_css_number_value_get (shadow->voffset, 0));
-  _gtk_theming_engine_paint_spinner (cr,
-                                     radius, progress,
-                                     _gtk_css_rgba_value_get_rgba (shadow->color));
+  _gtk_theming_engine_paint_spinner (cr, radius, progress);
 
   cr = gtk_css_shadow_value_finish_drawing (shadow, cr);
 
@@ -499,6 +497,7 @@ draw_shadow (const GtkCssValue   *shadow,
   if (has_empty_clip (cr))
     return;
 
+  gdk_cairo_set_source_rgba (cr, _gtk_css_rgba_value_get_rgba (shadow->color));
   if (blur)
     shadow_cr = gtk_css_shadow_value_start_drawing (shadow, cr);
   else
@@ -509,7 +508,6 @@ draw_shadow (const GtkCssValue   *shadow,
   if (shadow->inset)
     _gtk_rounded_box_clip_path (clip_box, shadow_cr);
 
-  gdk_cairo_set_source_rgba (shadow_cr, _gtk_css_rgba_value_get_rgba (shadow->color));
   cairo_fill (shadow_cr);
 
   if (blur)

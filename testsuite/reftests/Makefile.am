@@ -287,6 +287,9 @@ testdata = \
 	rotated-layout.ui \
 	separator-size.ref.ui \
 	separator-size.ui \
+	shadow-clip-rounding.css \
+	shadow-clip-rounding.ref.ui \
+	shadow-clip-rounding.ui \
 	shorthand-entry-border.css \
 	shorthand-entry-border.ref.ui \
 	shorthand-entry-border.ui \

@@ -182,7 +182,7 @@ gtk_css_shadow_value_new (GtkCssValue *hoffset,
   retval->color = color;
 
   return retval;
-}                  
+}
 
 GtkCssValue *
 _gtk_css_shadow_value_new_for_transition (GtkCssValue *target)
@@ -336,7 +336,7 @@ gtk_css_shadow_value_start_drawing (const GtkCssValue *shadow,
   if (cairo_has_current_point (cr))
     {
       double x, y;
-      
+
       cairo_get_current_point (cr, &x, &y);
       cairo_move_to (blur_cr, x, y);
     }
@@ -383,7 +383,7 @@ _gtk_css_shadow_value_paint_layout (const GtkCssValue *shadow,
 
   cairo_save (cr);
 
-  cairo_rel_move_to (cr, 
+  cairo_rel_move_to (cr,
                      _gtk_css_number_value_get (shadow->hoffset, 0),
                      _gtk_css_number_value_get (shadow->voffset, 0));
 

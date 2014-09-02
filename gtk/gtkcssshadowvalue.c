@@ -321,7 +321,7 @@ needs_blur (const GtkCssValue *shadow)
   return TRUE;
 }
 
-static const cairo_user_data_key_t shadow_key;
+static const cairo_user_data_key_t original_cr_key;
 
 static cairo_t *
 gtk_css_shadow_value_start_drawing (const GtkCssValue *shadow,
@@ -347,7 +347,7 @@ gtk_css_shadow_value_start_drawing (const GtkCssValue *shadow,
                                                 clip_rect.height + 2 * clip_radius);
   cairo_surface_set_device_offset (surface, clip_radius - clip_rect.x, clip_radius - clip_rect.y);
   blur_cr = cairo_create (surface);
-  cairo_set_user_data (blur_cr, &shadow_key, cairo_reference (cr), (cairo_destroy_func_t) cairo_destroy);
+  cairo_set_user_data (blur_cr, &original_cr_key, cairo_reference (cr), (cairo_destroy_func_t) cairo_destroy);
 
   if (cairo_has_current_point (cr))
     {
@@ -371,7 +371,7 @@ gtk_css_shadow_value_finish_drawing (const GtkCssValue *shadow,
   if (!needs_blur (shadow))
     return cr;
 
-  original_cr = cairo_get_user_data (cr, &shadow_key);
+  original_cr = cairo_get_user_data (cr, &original_cr_key);
 
   /* Blur the surface. */
   surface = cairo_get_target (cr);

@@ -7913,19 +7913,22 @@ gboolean
 _gtk_window_check_handle_wm_event (GdkEvent *event)
 {
   GtkWidget *widget;
+  GtkWidgetClass *wclass;
 
   widget = gtk_get_event_widget (event);
 
   if (!GTK_IS_WINDOW (widget))
     return FALSE;
 
+  wclass = GTK_WIDGET_CLASS (G_OBJECT_GET_CLASS (widget));
+
   if (event->type == GDK_BUTTON_PRESS ||
       event->type == GDK_2BUTTON_PRESS)
-    return gtk_window_button_press_event (widget, &event->button);
+    return wclass->button_press_event (widget, &event->button);
   else if (event->type == GDK_BUTTON_RELEASE)
-    return gtk_window_button_release_event (widget, &event->button);
+    return wclass->button_release_event (widget, &event->button);
   else if (event->type == GDK_MOTION_NOTIFY)
-    return gtk_window_motion_notify_event (widget, &event->motion);
+    return wclass->motion_notify_event (widget, &event->motion);
   else
     return FALSE;
 }

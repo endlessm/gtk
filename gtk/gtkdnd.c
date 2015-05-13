@@ -3101,7 +3101,9 @@ gtk_drag_set_icon_window (GdkDragContext *context,
                           gboolean        destroy_on_release)
 {
   GtkDragSourceInfo *info;
+#ifdef GDK_WINDOWING_WAYLAND
   GdkDisplay *display;
+#endif
 
   info = gtk_drag_get_source_info (context, FALSE);
   if (info == NULL)
@@ -3121,9 +3123,9 @@ gtk_drag_set_icon_window (GdkDragContext *context,
   info->hot_y = hot_y;
   info->destroy_icon = destroy_on_release;
 
+#ifdef GDK_WINDOWING_WAYLAND
   display = gdk_window_get_display (gdk_drag_context_get_source_window (context));
 
-#ifdef GDK_WINDOWING_WAYLAND
   if (GTK_IS_WINDOW (widget) && GDK_IS_WAYLAND_DISPLAY (display))
     {
       if (gtk_widget_get_realized (widget))

@@ -1,63 +1,250 @@
-gtk+3.0 (3.12.2-1endless0) eos; urgency=low
+gtk+3.0 (3.14.5-1) unstable; urgency=medium
 
-  * debian/*: Incorporate changes to Debian packaging from Debian's 3.12.2-1,
-    taken from
-    http://ftp.de.debian.org/debian/pool/main/g/gtk+3.0/gtk+3.0_3.12.2-1.debian.tar.xz
-    Distro patches not included.
-    [endlessm/eos-shell#2389]
+  * New upstream bugfix release.
+  * debian/patches/077_fix_menu_height_calculating.patch:
+    + Dropped, merged upstream.
 
- -- Philip Chimento <philip@endlessm.com>  Tue, 03 Jun 2014 15:35:06 -0600
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Tue, 11 Nov 2014 18:55:46 +0100
 
-gtk+3.0 (3.10.2-1endless6) eos; urgency=low
+gtk+3.0 (3.14.4-2) unstable; urgency=medium
 
-  * debian/patches/072-entry-consider-ascent-and-descent-when-requesting-he.patch:
-    Consider ascent and descent when requesting height.
-    [endlessm/eos-shell#2286]
+  [ Rico Tzschichholz ]
+  * Install org.gtk.Settings.Debug.gschema.xml
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Mon, 14 Apr 2014 10:57:23 +0200
+  [ Dmitry Shachnev ]
+  * debian/patches/077_fix_menu_height_calculating.patch: backport upstream
+    commit to fix calculation of menu height (closes: #767906).
 
-gtk+3.0 (3.10.2-1endless5) eos; urgency=low
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 04 Nov 2014 17:19:48 +0300
 
-  * debian/patches/endless-dont-implement-popup-menu-in-GtkWindow.patch:
-    Upstream patch that avoids cascade of menus on top of menus
-    with multiple clicks of the menu key.
-    [endlessm/eos-shell#1874]
+gtk+3.0 (3.14.4-1) unstable; urgency=medium
 
- -- Roddy Shuler <roddy@endlessm.com>  Wed, 09 Apr 2014 15:17:49 -0700
+  * New upstream release.
 
-gtk+3.0 (3.10.2-1endless4) unstable; urgency=low
+ -- Michael Biebl <biebl@debian.org>  Thu, 23 Oct 2014 15:43:31 +0200
 
-  * debian/patches/endless-remove-computer-from-filechooser.patch:
-    Do not expose "Computer" in the File Chooser left panel dialog.
-    [endlessm/eos-shell#1436]
+gtk+3.0 (3.14.3-1) unstable; urgency=medium
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Wed, 05 Mar 2014 17:56:55 +0100
+  * New upstream release.
+  * Install typelib files into multiarch paths.
+  * Mark gir and dev package as Multi-Arch: same.
+  * Bump Standards-Version to 3.9.6. No further changes.
 
-gtk+3.0 (3.10.2-1endless3) unstable; urgency=low
+ -- Michael Biebl <biebl@debian.org>  Mon, 13 Oct 2014 23:35:40 +0200
 
-  * debian/patches/endless-remove-home-from-pathbar.patch:
-    Remove Home folder from pathbar in file chooser dialog.
-    [endlessm/eos-shell#1436]
+gtk+3.0 (3.14.2-1) unstable; urgency=medium
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Tue, 25 Feb 2014 10:57:10 +0100
+  * New upstream release.
+    - includes fix gtkbuilder fix for problems affecting libgweather
+      users (like gnome-clocks, Closes: #764681)
 
-gtk+3.0 (3.10.2-1endless2) unstable; urgency=low
+ -- Andreas Henriksson <andreas@fatal.se>  Sat, 11 Oct 2014 15:12:08 +0200
 
-  * debian/patches/endless-remove-Home-folder:
-    Remove Home folder from the places sidebar, and make Documents the default
-    place.
-    [endlessm/eos-shell#1436]
+gtk+3.0 (3.14.1-1) unstable; urgency=medium
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Tue, 17 Dec 2013 19:44:34 +0100
+  [ Emilio Pozuelo Monfort ]
+  * New upstream release.
 
-gtk+3.0 (3.10.2-1endless1) unstable; urgency=low
+  [ Andreas Henriksson ]
+  * Add debian/patches/reftest-known-fail.patch
+    - make it possible to tag individual reftests as ok to fail.
+  * debian/rules:
+    touch testsuite/reftests/style-properties-nth-child.ui.known_fail
+    - reftest shows this intermittently has a couple of pixels
+      difference on some architectures. No big deal.
+      Noone is willing to investigate and consensus is it's ok to disable.
 
-  * Added Cosimo's patches
-    endless-support-svg-icons-symbolic.patch
-    endless-force-size-for-GtkAppChooser.patch
-    for Gtk 3.8 and rebased them for 3.10
+ -- Michael Biebl <biebl@debian.org>  Thu, 02 Oct 2014 01:49:16 +0200
 
- -- Matt Watson <watson@endlessm.com>  Mon, 02 Dec 2013 16:26:55 -0800
+gtk+3.0 (3.14.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Refresh patches.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 23 Sep 2014 22:25:42 +0200
+
+gtk+3.0 (3.13.9-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Fri, 19 Sep 2014 22:25:39 +0200
+
+gtk+3.0 (3.13.9-1) experimental; urgency=medium
+
+  [ Andreas Henriksson ]
+  * libgtk-3-common: Depend on adwaita-icon-theme (>= ${gnome:Version})
+    - gtk+ should guarantee we have atleast one sane icon theme available.
+  * debian/rules: Include gnome-version.mk to generate ${gnome:Version}
+
+  [ Emilio Pozuelo Monfort ]
+  * New upstream development release.
+  * debian/control.in:
+    + Bump libpango1.0-dev minimum (build-)dependency.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Fri, 19 Sep 2014 17:37:42 +0200
+
+gtk+3.0 (3.13.8-1) experimental; urgency=medium
+
+  [ Andreas Henriksson ]
+  * New upstream development release (3.13.7)
+  * Update build-dependencies according to configure.ac
+    - bump libglib2.0-dev to (>= 2.41.2)
+  * Update libgtk-3.0-dev dependency on libglib2.0-dev to (>= 2.41.2)
+  * Massage debian/patches/018_gdkenumtypes.c_location.patch to apply again
+  * Drop backported/merged patches now in released version:
+    - debian/patches/072_Avoid-pkg-config-atleast-version.patch
+  * Have quilt refresh remaining patches.
+  * Bump gobject-introspection build-dependency to (>= 1.41.3)
+    - this one supports new "nullable" annotation.
+  * Build-depend on adwaita-icon-theme instead of gnome-icon-theme-symbolic
+  * Update debian/libgtk-3-0.symbols with many additions
+  * New upstream development release (3.13.8)
+  * Update build-dependencies according to configure.ac changes:
+    - Bump libgdk-pixbuf2.0-dev to (>= 2.30.0)
+    - Bump libwayland-dev to (>= 1.5.91)
+  * debian/patches/032_mips_treeview_row_separator_height.patch:
+    - massage the patch into applying again.
+  * Update debian/libgtk-3-0.symbols
+    - 4 dropped gdk_wayland_*_libgtk_only symbols, should be unused.
+    - 3 new wayland related symbols
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 05 Sep 2014 22:50:11 +0200
+
+gtk+3.0 (3.12.2-3) unstable; urgency=medium
+
+  * Team upload
+  * debian/missing-sources/zlib.js-0.1.6: add missing source code for
+    gdk/broadway/rawinflate.min.js (Closes: #753968)
+    - some files in zlib.js upstream had missing source code themselves
+      (closure-compiler.jar) or are not needed here, and have been removed
+      to save space; see debian/missing-sources/README for details
+    - make debian/missing-sources/rawinflate.js a symlink into zlib.js-0.1.6
+      to reassure lintian that source is present
+  * d/p/073-Use-AC_USE_SYSTEM_EXTENSIONS-to-get-_GNU_SOURCE-_XOP.patch:
+    define _GNU_SOURCE on non-Linux to fix "assignment makes pointer from
+    integer without a cast" found by build-log scanning on kFreeBSD
+
+ -- Simon McVittie <smcv@debian.org>  Sun, 17 Aug 2014 15:26:50 +0100
+
+gtk+3.0 (3.12.2-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Dmitry Shachnev ]
+  * Autopkgtests fixes: add missing xauth dependency, and stop using
+    deprecated GtkStock item.
+
+  [ Simon McVittie ]
+  * debian/patches/072_Avoid-pkg-config-atleast-version.patch:
+    stop AM_PATH_GTK_3_0([3], [], [], [gthread]) trying to require
+    gthread-2.0 >= 3, which doesn't exist (Closes: #756476)
+
+ -- Simon McVittie <smcv@debian.org>  Sun, 10 Aug 2014 17:26:57 +0100
+
+gtk+3.0 (3.12.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Fri, 16 May 2014 12:12:48 +0200
+
+gtk+3.0 (3.12.1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sat, 26 Apr 2014 16:44:41 +0200
+
+gtk+3.0 (3.12.0-4) unstable; urgency=medium
+
+  * Build-depend on gnome-icon-theme-symbolic and make test suite errors
+    fatal again.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Thu, 03 Apr 2014 19:45:56 +0200
+
+gtk+3.0 (3.12.0-3) unstable; urgency=medium
+
+  * debian/control.in:
+    + Loosen the dependencies on libgtk-3-common from = ${source:Version}
+      to >= ${source:Version} to make libgtk-3-bin and libgtk-3-0 installable
+      when a new source version is uploaded.
+    + Don't build depend on gnome-icon-theme-symbolic as that pulls
+      gnome-icon-theme which in turns pulls libgtk-3-bin, which isn't
+      installable at the moment.
+  * debian/rules:
+    + Temporarily make the test suite non-fatal as gnome-icon-theme-symbolic
+      is needed for some tests.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 02 Apr 2014 19:11:32 +0200
+
+gtk+3.0 (3.12.0-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 02 Apr 2014 16:10:12 +0200
+
+gtk+3.0 (3.12.0-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Update debian/libgtk-3-0.symbols with added symbols.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 25 Mar 2014 10:17:09 +0100
+
+gtk+3.0 (3.11.8-1) experimental; urgency=medium
+
+  * New upstream release.
+  * debian/control.in,
+    debian/rules:
+    + Enable Google cloud print support on the normal build.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Sun, 09 Mar 2014 15:07:56 +0100
+
+gtk+3.0 (3.11.7-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Bump build-dependencies according to configure.ac:
+    - glib 2.39.5 and gtk-doc 1.20
+  * Use quilt to refresh all patches.
+  * Update debian/libgtk-3-0.symbols
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 18 Feb 2014 20:22:50 +0100
+
+gtk+3.0 (3.11.5-1) experimental; urgency=medium
+
+  * New upstream development release.
+  * debian/control.in:
+    + Update build dependencies.
+    + Build depend on gnome-icon-theme-symbolic, needed for some tests.
+    + Standards-Version is 3.9.5, no changes needed.
+  * debian/libgtk-3-0.symbols:
+    + Add new symbols. A couple of wayland-related symbols,
+      gdk_wayland_display_get_wl_shell{,_surface} are gone in favor of
+      gdk_wayland_display_get_xdg_shell. The wayland backend is not fully
+      stable yet and nothing in the archive should be depending on them,
+      so this should be fine.
+    + Drop four commented-out symbols that weren't exported after 3.9.10,
+      as mentioned below in the 3.9.14 changelog entry. Those for symbols
+      were not exported in the headers and were only used internally by
+      gdk.
+  * debian/patches/080_disable-parallel-docs-build.patch:
+     + Dropped, gtk-doc 1.20 works fine with parallel builds.
+  * debian/rules:
+     + Break colord<->gtk+ loop when bootstrapping. Thanks Daniel Schepler.
+       Closes: #738603.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Mon, 17 Feb 2014 18:57:53 +0100
+
+gtk+3.0 (3.10.7-1) unstable; urgency=low
+
+  * debian/libgtk-3-bin.install:
+    + Ship broadwayd.
+  * debian/rules:
+    + Enable parallel builds.
+  * New upstream release.
+  * debian/patches/080_disable-parallel-docs-build.patch:
+    + Disable parallel support for the docs as that has races, see
+      the similar glib2.0 patch for a longer explanation.
+  * Upload to unstable.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Sat, 15 Feb 2014 14:15:56 +0100
 
 gtk+3.0 (3.10.2-1) experimental; urgency=low
 

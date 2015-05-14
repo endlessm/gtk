@@ -1181,6 +1181,7 @@ theme_sources = 				\
 	theme/Adwaita/_colors.scss 		\
 	theme/Adwaita/_common.scss 		\
 	theme/Adwaita/_drawing.scss 		\
+	theme/Adwaita/_endless.scss 		\
 	theme/Adwaita/gtk-contained-dark.scss 	\
 	theme/Adwaita/gtk-contained.scss 	\
 	theme/Adwaita/parse-sass.sh 		\

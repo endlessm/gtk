@@ -1,0 +1,42 @@
+/* Endless window top bar */
+.top-bar {
+  background-image: linear-gradient(to bottom,
+                                    #3c3c3c,
+                                    #292929);
+
+  /* Endless top bar icons */
+  .button {
+      color: #8a8a8a;
+      padding: 0px;
+      background-image: none;
+      border-width: 0px;
+      border-radius: 2px;
+      border-image: none;
+
+      &:hover {
+        color: #ffffff;
+        background-image: linear-gradient(to bottom,
+                                          rgb(68,68,68),
+                                          rgb(108,108,108) 95%,
+                                          rgb(131,131,131) 98%);
+      }
+      &:active {
+        color: #8a8a8a;
+        background-image: linear-gradient(to bottom,
+                                          rgb(67,67,67),
+                                          rgb(71,71,71) 95%,
+                                          rgb(79,79,79) 98%);
+      }
+      &:backdrop {
+        background-image: none;
+        background-color: transparent;
+      }
+  }
+}
+
+/* Shadow beneath the top bar */
+.mutter-topbar-shadow {
+  border-width: 2px;
+  border-style: solid;
+  border-color: transparentize(black, 0.15);
+}

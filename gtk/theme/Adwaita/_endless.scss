@@ -1,0 +1,101 @@
+headerbar.default-decoration {
+  color: #dfdbd2;
+  background-image: linear-gradient(to bottom,
+                                    #464646,
+                                    #1e1e1e);
+  box-shadow: inset 0 -1px #0a0a0a,
+              inset 0 -2px #292929,
+              inset 0 1px  #4d4d4d;
+  border: none;
+  min-height: 36px;
+
+  &:dir(rtl) {
+    padding: 0 16px 0 6px;
+  }
+
+  &:dir(ltr) {
+    padding: 0 6px 0 16px;
+  }
+
+  &.maximized {
+    box-shadow: inset 0 -1px #0a0a0a,
+                inset 0 -2px #292929;
+  }
+
+  &:backdrop {
+    color: #807d78;
+    background-image: linear-gradient(to bottom,
+                                      #282828,
+                                      #1e1e1e);
+    box-shadow: inset 0 -1px #0a0a0a,
+                inset 0 -2px #292929,
+                inset 0 1px  #303030;
+
+    &.maximized {
+      box-shadow: inset 0 -1px #0a0a0a,
+                  inset 0 -2px #292929;
+    }
+  }
+
+  button.titlebutton {
+      color: #8c8c8c;
+      background-image: none;
+      border: none;
+      border-image: none;
+      box-shadow: none;
+      background-color: transparent;
+      border-radius: 2px;
+      -gtk-icon-shadow: none;
+
+      &:hover {
+        color: #dcdcdc;
+        background-image: linear-gradient(to bottom,
+                                          rgb(131, 131, 131) 2%,
+                                          rgb(108, 108, 108) 5%,
+                                          rgb(68, 68, 68))
+      }
+      &:active {
+        color: #787878;
+        background-image: linear-gradient(to bottom,
+                                          rgb(79, 79, 79) 2%,
+                                          rgb(71, 71, 71) 5%,
+                                          rgb(67, 67, 67))
+      }
+      &:backdrop {
+        background-image: none;
+      }
+  }
+}
+
+/* Set dark background for Chrome and Chromium > 59 top bar */
+.header-bar.chromium {
+  color: #807d78;
+  background-image: linear-gradient(to bottom,
+                                    #464646,
+                                    #1e1e1e);
+  box-shadow: none;
+}
+
+.header-bar.chromium:backdrop {
+  color: #807d78;
+  background-image: linear-gradient(to bottom,
+                                    #282828,
+                                    #1e1e1e);
+}
+
+/* Fix color of window management buttons for Chrome top bar */
+button.titlebutton.chromium {
+  color: #8c8c8c;
+  -gtk-icon-shadow: none;
+}
+
+button.titlebutton.chromium:hover {
+  color: #dcdcdc;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+}
+
+button.titlebutton.chromium:active {
+  color: #787878;
+}

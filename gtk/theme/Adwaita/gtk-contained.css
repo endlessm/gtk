@@ -4788,3 +4788,162 @@ read if you used those and something break with a version upgrade you're on your
   border-width: 2px;
   border-style: solid;
   border-color: rgba(0, 0, 0, 0.85); }
+
+/* used by gnome-font-viewer and sushi */
+SushiFontWidget {
+  padding: 6px 12px; }
+
+/* gnome-terminal */
+TerminalScreen {
+  background-color: #ffffff;
+  color: #2e3436;
+  -TerminalScreen-background-darkness: 0.95; }
+
+TerminalWindow GtkNotebook.notebook {
+  border-bottom-width: 0;
+  border-right-width: 0;
+  border-left-width: 0; }
+
+/* gedit */
+GeditWindow .pane-separator,
+GeditWindow .pane-separator:hover {
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
+  border-color: #a1a1a1;
+  background-color: shade(#ededed, 0.95);
+  color: #a1a1a1; }
+
+GeditPanel.title GtkLabel {
+  padding: 7px 0 6px 0; }
+
+GeditPanel .toolbar, GeditPanel .inline-toolbar, GeditPanel .search-bar, GeditPanel .location-bar {
+  border-style: none;
+  background-color: transparent; }
+
+GeditDocumentsPanel .view {
+  background-color: #fafafa; }
+
+GeditDocumentsPanel .view:backdrop {
+  background-color: #fafafa; }
+
+GeditPanel .notebook {
+  padding: 0px;
+  border-width: 1px 0; }
+
+GeditWindow .notebook {
+  border-width: 1px 0; }
+
+GeditPanel .notebook tab,
+GeditWindow .notebook tab {
+  border-width: 0; }
+
+GeditStatusComboBox .button, GeditStatusComboBox .header-bar .button.titlebutton, .header-bar GeditStatusComboBox .button.titlebutton,
+GeditStatusComboBox .titlebar .button.titlebutton,
+.titlebar GeditStatusComboBox .button.titlebutton {
+  text-shadow: none; }
+
+GeditStatusComboBox .button:backdrop, GeditStatusComboBox .header-bar .button.titlebutton:backdrop, .header-bar GeditStatusComboBox .button.titlebutton:backdrop,
+GeditStatusComboBox .titlebar .button.titlebutton:backdrop,
+.titlebar GeditStatusComboBox .button.titlebutton:backdrop,
+GeditStatusComboBox .button:backdrop:hover,
+GeditStatusComboBox .button,
+GeditStatusComboBox .header-bar .button.titlebutton,
+.header-bar GeditStatusComboBox .button.titlebutton,
+GeditStatusComboBox .titlebar .button.titlebutton,
+.titlebar GeditStatusComboBox .button.titlebutton,
+GeditStatusComboBox .button:hover,
+GeditStatusComboBox .header-bar .button.titlebutton:hover,
+.header-bar GeditStatusComboBox .button.titlebutton:hover,
+GeditStatusComboBox .titlebar .button.titlebutton:hover,
+.titlebar GeditStatusComboBox .button.titlebutton:hover,
+GeditStatusComboBox .button:active,
+GeditStatusComboBox .header-bar .button.titlebutton:active,
+.header-bar GeditStatusComboBox .button.titlebutton:active,
+GeditStatusComboBox .titlebar .button.titlebutton:active,
+.titlebar GeditStatusComboBox .button.titlebutton:active,
+GeditStatusComboBox .button:active:hover {
+  border-image: none;
+  border-style: solid;
+  border-width: 0 1px;
+  border-radius: 0;
+  padding: 1px 8px 2px 4px; }
+
+GeditStatusComboBox .button:hover, GeditStatusComboBox .header-bar .button.titlebutton:hover, .header-bar GeditStatusComboBox .button.titlebutton:hover,
+GeditStatusComboBox .titlebar .button.titlebutton:hover,
+.titlebar GeditStatusComboBox .button.titlebutton:hover,
+GeditStatusComboBox .button:active,
+GeditStatusComboBox .header-bar .button.titlebutton:active,
+.header-bar GeditStatusComboBox .button.titlebutton:active,
+GeditStatusComboBox .titlebar .button.titlebutton:active,
+.titlebar GeditStatusComboBox .button.titlebutton:active,
+GeditStatusComboBox .button:active:hover {
+  border-color: #a1a1a1; }
+
+GeditStatusComboBox .button:backdrop, GeditStatusComboBox .header-bar .button.titlebutton:backdrop, .header-bar GeditStatusComboBox .button.titlebutton:backdrop,
+GeditStatusComboBox .titlebar .button.titlebutton:backdrop,
+.titlebar GeditStatusComboBox .button.titlebutton:backdrop,
+GeditStatusComboBox .button:backdrop:hover {
+  border-color: #a8a8a8; }
+
+GeditViewFrame .gedit-search-slider {
+  background-color: #ffffff;
+  padding: 6px;
+  border-color: #969696;
+  border-radius: 0 0 3px 3px;
+  border-width: 0 1px 1px 1px;
+  border-style: solid; }
+
+GeditViewFrame .gedit-search-slider .not-found {
+  color: white;
+  background-image: none;
+  background-color: #ed3636; }
+
+GeditViewFrame .gedit-search-slider .not-found:selected {
+  background-color: #4a90d9;
+  color: #ffffff; }
+
+/* evince */
+EvWindow.background > GtkBox.vertical > GtkPaned.horizontal > GtkBox.vertical > GtkScrolledWindow.frame {
+  border-width: 0;
+  border-radius: 0; }
+
+EvWindow.background EvSidebar.vertical .frame {
+  border-width: 1px 0 0;
+  border-radius: 0; }
+
+EvWindow.background EvSidebar.vertical .notebook {
+  border-width: 1px 0 0; }
+
+EvWindow.background EvSidebarAnnotations.vertical GtkToolPalette > GtkToolItemGroup > .button {
+  border-image: none;
+  border-radius: 0;
+  border-style: solid;
+  border-width: 0 0 1px;
+  border-color: #a1a1a1; }
+
+EvWindow.background EvSidebar.vertical .notebook .frame {
+  border-width: 0; }
+
+EvWindow .pane-separator,
+EvWindow .pane-separator:hover {
+  border-width: 0 1px;
+  border-style: solid;
+  border-color: #a1a1a1;
+  background-color: #e0e0e0;
+  color: #a1a1a1; }
+
+EvWindow.background EggFindBar.toolbar, EvWindow.background EggFindBar.inline-toolbar, EvWindow.background EggFindBar.search-bar, EvWindow.background EggFindBar.location-bar {
+  border-width: 1px 0 0;
+  border-style: solid;
+  border-color: #a1a1a1; }
+
+/* gcalctool */
+MathWindow.background > GtkBox.vertical > GtkBox.vertical > GtkScrolledWindow {
+  padding: 4px;
+  background-color: #ffffff;
+  border-radius: 3px; }
+
+MathWindow.background > GtkBox.vertical > GtkBox.vertical > GtkScrolledWindow:backdrop {
+  padding: 4px;
+  background-color: white;
+  border-radius: 3px; }

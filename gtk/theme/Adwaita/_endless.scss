@@ -40,3 +40,170 @@
   border-style: solid;
   border-color: transparentize(black, 0.15);
 }
+
+// FIXME - these should all be moved away into the individual components
+// when we rebase
+
+/* used by gnome-font-viewer and sushi */
+SushiFontWidget {
+  padding: 6px 12px;
+}
+
+/* gnome-terminal */
+TerminalScreen {
+    background-color: $base_color;
+    color: $fg_color;
+    -TerminalScreen-background-darkness: 0.95;
+}
+
+TerminalWindow GtkNotebook.notebook {
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+}
+
+/* gedit */
+
+GeditWindow .pane-separator, 
+GeditWindow .pane-separator:hover {
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+    border-color: $borders_color;
+    background-color: shade($bg_color, 0.95);
+    color: $borders_color;
+}
+
+GeditPanel.title GtkLabel {
+    padding: 7px 0 6px 0;
+}
+
+GeditPanel .toolbar {
+    border-style: none;
+    background-color: transparent;
+}
+
+GeditDocumentsPanel .view {
+    background-color: $sidebar_bg_color;
+}
+
+GeditDocumentsPanel .view:backdrop {
+    background-color: $backdrop_sidebar_bg_color;
+}
+
+GeditPanel .notebook {
+    padding: 0px;
+    border-width: 1px 0;
+}
+
+GeditWindow .notebook {
+    border-width: 1px 0;
+}
+
+GeditPanel .notebook tab,
+GeditWindow .notebook tab {
+    border-width: 0;
+}
+
+GeditStatusComboBox .button {
+    text-shadow: none;
+}
+
+GeditStatusComboBox .button:backdrop,
+GeditStatusComboBox .button:backdrop:hover,
+GeditStatusComboBox .button,
+GeditStatusComboBox .button:hover,
+GeditStatusComboBox .button:active,
+GeditStatusComboBox .button:active:hover {
+    border-image: none;
+    border-style: solid;
+    border-width: 0 1px;
+    border-radius: 0;
+    padding: 1px 8px 2px 4px;
+}
+
+GeditStatusComboBox .button:hover,
+GeditStatusComboBox .button:active,
+GeditStatusComboBox .button:active:hover {
+    border-color: $borders_color;
+}
+
+GeditStatusComboBox .button:backdrop,
+GeditStatusComboBox .button:backdrop:hover {
+    border-color: $backdrop_borders_color;
+}
+
+GeditViewFrame .gedit-search-slider {
+    background-color: $base_color;
+    padding: 6px;
+    border-color: darken(#c9c9c9, 20%);
+    border-radius: 0 0 3px 3px;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+}
+
+GeditViewFrame .gedit-search-slider .not-found {
+    color: white;
+    background-image: none;
+    background-color: rgb(237,54,54);
+}
+
+GeditViewFrame .gedit-search-slider .not-found:selected {
+    background-color: $selected_bg_color;
+    color: $selected_fg_color;
+}
+
+/* evince */
+EvWindow.background > GtkBox.vertical > GtkPaned.horizontal > GtkBox.vertical > GtkScrolledWindow.frame {
+    border-width: 0;
+    border-radius: 0;
+}
+
+EvWindow.background EvSidebar.vertical .frame {
+    border-width: 1px 0 0;
+    border-radius: 0;
+}
+
+EvWindow.background EvSidebar.vertical .notebook {
+    border-width: 1px 0 0;
+}
+
+EvWindow.background EvSidebarAnnotations.vertical GtkToolPalette > GtkToolItemGroup > .button { 
+    border-image: none;
+    border-radius: 0;
+    border-style: solid;
+    border-width: 0 0 1px;
+    border-color: $borders_color;
+}
+
+EvWindow.background EvSidebar.vertical .notebook .frame {
+    border-width: 0;
+}
+
+EvWindow .pane-separator, 
+EvWindow .pane-separator:hover {
+    border-width: 0 1px;
+    border-style: solid;
+    border-color: $borders_color;
+    background-color: darken($bg_color, 5%);
+    color: $borders_color;
+}
+
+EvWindow.background EggFindBar.toolbar {
+    border-width: 1px 0 0;
+    border-style: solid;
+    border-color: $borders_color;
+}
+
+/* gcalctool */
+
+MathWindow.background > GtkBox.vertical > GtkBox.vertical > GtkScrolledWindow {
+    padding: 4px;
+    background-color: $base_color;
+    border-radius: 3px;
+}
+
+MathWindow.background > GtkBox.vertical > GtkBox.vertical > GtkScrolledWindow:backdrop {
+    padding: 4px;    
+    background-color:  $backdrop_base_color;
+    border-radius: 3px;
+}

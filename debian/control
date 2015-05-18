@@ -44,7 +44,8 @@ Build-Depends: debhelper (>= 8.1.3),
                libjson-glib-dev,
                gobject-introspection (>= 1.41.3),
                libgirepository1.0-dev (>= 1.39.0),
-               xvfb
+               xvfb,
+               libepoxy-dev
 Build-Depends-Indep: docbook-xml,
                      docbook-utils,
                      libglib2.0-doc,

@@ -162,7 +162,9 @@ Depends: @SHARED_PKG@ (= ${binary:Version}),
          libxdamage-dev,
          pkg-config (>= 0.26-1),
          libwayland-dev (>= 1.4.0) [linux-any],
-         libxkbcommon-dev
+         libxkbcommon-dev,
+         libepoxy-dev,
+         libegl1-mesa-dev
 Suggests: @DOC_PKG@
 Description: development files for the GTK+ library
  GTK+ is a multi-platform toolkit for creating graphical user

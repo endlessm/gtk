@@ -410,6 +410,119 @@ G_GNUC_END_IGNORE_DEPRECATIONS
   return win;
 }
 
+static GtkWidget *
+test_input_stacking (void)
+{
+  GtkWidget *win;
+  GtkWidget *overlay;
+  GtkWidget *label, *entry;
+  GtkWidget *grid;
+  GtkWidget *button;
+  GtkWidget *vbox;
+  int i,j;
+
+  win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (win), "Input Stacking");
+
+  overlay = gtk_overlay_new ();
+  grid = gtk_grid_new ();
+  gtk_container_add (GTK_CONTAINER (overlay), grid);
+
+  for (j = 0; j < 5; j++)
+    {
+      for (i = 0; i < 5; i++)
+	{
+	  button = gtk_button_new_with_label ("     ");
+	  gtk_widget_set_hexpand (button, TRUE);
+	  gtk_widget_set_vexpand (button, TRUE);
+	  gtk_grid_attach (GTK_GRID (grid), button, i, j, 1, 1);
+	}
+    }
+
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
+  gtk_overlay_add_overlay (GTK_OVERLAY (overlay), vbox);
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY (overlay), vbox, TRUE);
+  gtk_widget_set_halign (vbox, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (vbox, GTK_ALIGN_CENTER);
+
+  label = gtk_label_new ("This is some overlaid text\n"
+			 "It does not get input\n"
+			 "But the entry does");
+  gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 8);
+
+  entry = gtk_entry_new ();
+  gtk_box_pack_start (GTK_BOX (vbox), entry, FALSE, FALSE, 8);
+
+
+  gtk_container_add (GTK_CONTAINER (win), overlay);
+
+  return win;
+}
+
+static void
+reorder_overlay (GtkButton *button, GtkOverlay *overlay)
+{
+  gtk_overlay_reorder_overlay (overlay, gtk_widget_get_parent (GTK_WIDGET (button)), -1);
+}
+
+static GtkWidget *
+test_child_order (void)
+{
+  GtkWidget *win;
+  GtkWidget *overlay;
+  GtkWidget *button;
+  GtkWidget *label;
+  GtkWidget *ebox;
+  GdkRGBA color;
+  int i;
+
+  win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (win), "Child Order");
+
+  overlay = gtk_overlay_new ();
+  gtk_container_add (GTK_CONTAINER (win), overlay);
+
+  for (i = 0; i < 4; i++)
+    {
+      char *colors[] = {
+	"rgba(255,0,0,0.8)", "rgba(0,255,0,0.8)", "rgba(0,0,255,0.8)", "rgba(255,0,255,0.8)"
+      };
+      ebox = gtk_event_box_new ();
+      button = gtk_button_new_with_label (g_strdup_printf ("Child %d", i));
+      g_signal_connect (button, "clicked", G_CALLBACK (reorder_overlay), overlay);
+      gtk_widget_set_margin_start (button, 20);
+      gtk_widget_set_margin_end (button, 20);
+      gtk_widget_set_margin_top (button, 10);
+      gtk_widget_set_margin_bottom (button, 10);
+
+      gtk_container_add (GTK_CONTAINER (ebox), button);
+
+      gdk_rgba_parse (&color, colors[i]);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+      gtk_widget_override_background_color (ebox, 0, &color);
+ G_GNUC_END_IGNORE_DEPRECATIONS
+      gtk_widget_set_halign (ebox, (i == 0 || i == 3) ? GTK_ALIGN_START : GTK_ALIGN_END);
+      gtk_widget_set_valign (ebox, i < 2 ? GTK_ALIGN_START : GTK_ALIGN_END);
+      gtk_overlay_add_overlay (GTK_OVERLAY (overlay), ebox);
+    }
+
+  ebox = gtk_event_box_new ();
+  gdk_rgba_parse (&color, "white");
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+  gtk_widget_override_background_color (ebox, 0, &color);
+G_GNUC_END_IGNORE_DEPRECATIONS
+
+  label = gtk_label_new ("Main\n"
+			 "Main\n"
+			 "Main\n"
+			 "Main\n");
+  gtk_container_add (GTK_CONTAINER (ebox), label);
+  gtk_container_add (GTK_CONTAINER (overlay), ebox);
+
+  return win;
+}
+
+
 int
 main (int argc, char *argv[])
 {
@@ -420,6 +533,8 @@ main (int argc, char *argv[])
   GtkWidget *win5;
   GtkWidget *win6;
   GtkWidget *win7;
+  GtkWidget *win8;
+  GtkWidget *win9;
 
   gtk_init (&argc, &argv);
 
@@ -446,6 +561,12 @@ main (int argc, char *argv[])
 
   win7 = test_stacking ();
   gtk_widget_show_all (win7);
+
+  win8 = test_input_stacking ();
+  gtk_widget_show_all (win8);
+
+  win9 = test_child_order ();
+  gtk_widget_show_all (win9);
 
   gtk_main ();
 

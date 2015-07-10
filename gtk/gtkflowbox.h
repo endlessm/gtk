@@ -213,6 +213,12 @@ void                  gtk_flow_box_set_sort_func                (GtkFlowBox     
 GDK_AVAILABLE_IN_3_12
 void                  gtk_flow_box_invalidate_sort              (GtkFlowBox         *box);
 
+GDK_AVAILABLE_IN_3_18
+void                  gtk_flow_box_set_show_incomplete_lines    (GtkFlowBox         *box,
+                                                                 gboolean            show_incomplete_lines);
+GDK_AVAILABLE_IN_3_18
+gboolean              gtk_flow_box_get_show_incomplete_lines    (GtkFlowBox         *box);
+
 G_END_DECLS
 
 

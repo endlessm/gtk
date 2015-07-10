@@ -739,6 +739,7 @@ enum {
   PROP_MAX_CHILDREN_PER_LINE,
   PROP_SELECTION_MODE,
   PROP_ACTIVATE_ON_SINGLE_CLICK,
+  PROP_SHOW_INCOMPLETE_LINES,
 
   /* orientable */
   PROP_ORIENTATION,
@@ -751,6 +752,7 @@ typedef struct _GtkFlowBoxPrivate GtkFlowBoxPrivate;
 struct _GtkFlowBoxPrivate {
   GtkOrientation    orientation;
   gboolean          homogeneous;
+  gboolean          show_incomplete_lines;
 
   guint             row_spacing;
   guint             column_spacing;
@@ -1588,6 +1590,7 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
   gint line_offset, item_offset, n_children, n_lines, line_count;
   gint extra_pixels = 0, extra_per_item = 0, extra_extra = 0;
   gint extra_line_pixels = 0, extra_per_line = 0, extra_line_extra = 0;
+  guint extra_items, last_complete_line_item;
   gint i, this_line_size;
   GSequenceIter *iter;
 
@@ -1656,7 +1659,7 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
   if (priv->homogeneous)
     {
       n_lines = n_children / line_length;
-      if ((n_children % line_length) > 0)
+      if (priv->show_incomplete_lines && (n_children % line_length) > 0)
         n_lines++;
 
       n_lines = MAX (n_lines, 1);
@@ -1701,7 +1704,7 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
 
       /* Calculate the number of lines after determining the final line_length */
       n_lines = n_children / line_length;
-      if ((n_children % line_length) > 0)
+      if (priv->show_incomplete_lines && (n_children % line_length) > 0)
         n_lines++;
 
       n_lines = MAX (n_lines, 1);
@@ -1808,6 +1811,9 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
         }
     }
 
+  extra_items = n_children % line_length;
+  last_complete_line_item = n_children - extra_items;
+
   i = 0;
   line_count = 0;
   for (iter = g_sequence_get_begin_iter (priv->children);
@@ -1822,6 +1828,9 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
 
       if (!child_is_visible (child))
         continue;
+
+      if (!priv->show_incomplete_lines && i >= last_complete_line_item)
+        break;
 
       /* Get item position */
       position = i % line_length;
@@ -1864,8 +1873,6 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
                * any leading items */
               if (line_count == n_lines -1)
                 {
-                  gint extra_items = n_children % line_length;
-
                   if (priv->homogeneous)
                     {
                       item_offset += item_size * (line_length - extra_items);
@@ -1888,8 +1895,6 @@ gtk_flow_box_size_allocate (GtkWidget     *widget,
       /* Push the index along for the last line when spreading to the end */
       if (item_align == GTK_ALIGN_END && line_count == n_lines -1)
         {
-          gint extra_items = n_children % line_length;
-
           position += line_length - extra_items;
         }
 
@@ -2272,7 +2277,7 @@ gtk_flow_box_get_preferred_height_for_width (GtkWidget *widget,
 
           /* Round up how many lines we need to allocate for */
           lines = n_children / line_length;
-          if ((n_children % line_length) > 0)
+          if (priv->show_incomplete_lines && (n_children % line_length) > 0)
             lines++;
 
           min_height = min_item_height * lines;
@@ -2437,7 +2442,7 @@ gtk_flow_box_get_preferred_width_for_height (GtkWidget *widget,
           /* Round up how many lines we need to allocate for */
           n_children = get_visible_children (box);
           lines = n_children / line_length;
-          if ((n_children % line_length) > 0)
+          if (priv->show_incomplete_lines && (n_children % line_length) > 0)
             lines++;
 
           min_width = min_item_width * lines;
@@ -3540,6 +3545,9 @@ gtk_flow_box_get_property (GObject    *object,
     case PROP_ACTIVATE_ON_SINGLE_CLICK:
       g_value_set_boolean (value, priv->activate_on_single_click);
       break;
+    case PROP_SHOW_INCOMPLETE_LINES:
+      g_value_set_boolean (value, priv->show_incomplete_lines);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -3587,6 +3595,9 @@ gtk_flow_box_set_property (GObject      *object,
       break;
     case PROP_ACTIVATE_ON_SINGLE_CLICK:
       gtk_flow_box_set_activate_on_single_click (box, g_value_get_boolean (value));
+      break;
+    case PROP_SHOW_INCOMPLETE_LINES:
+      gtk_flow_box_set_show_incomplete_lines (box, g_value_get_boolean (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -3750,6 +3761,28 @@ gtk_flow_box_class_init (GtkFlowBoxClass *class)
                        P_("The amount of horizontal space between two children"),
                        0, G_MAXUINT, 0,
                        G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
+  /**
+   * GtkFlowBox:show-incomplete-lines:
+   *
+   * If the last line (row or column) in the flow box does not have
+   * a complete row or column of children, it can be useful in some
+   * circumstances to hide the entire line and never show it. This
+   * property, which is %TRUE by default, determines whether these
+   * incomplete lines are shown.
+   *
+   * This can come in handy when building infinite scrolling grids
+   * or similar, which never want to show an incomplete line of items
+   * to the user if there could be more items loaded.
+   *
+   * Since: 3.18
+   */
+  props[PROP_SHOW_INCOMPLETE_LINES] =
+    g_param_spec_boolean ("show-incomplete-lines",
+                          P_("Show incomplete lines"),
+                          P_("Whether to show incomplete lines"),
+                          TRUE,
+                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   g_object_class_install_properties (object_class, LAST_PROP, props);
 
@@ -3956,6 +3989,7 @@ gtk_flow_box_init (GtkFlowBox *box)
   priv->max_children_per_line = DEFAULT_MAX_CHILDREN_PER_LINE;
   priv->column_spacing = 0;
   priv->row_spacing = 0;
+  priv->show_incomplete_lines = TRUE;
   priv->activate_on_single_click = TRUE;
 
   _gtk_orientable_set_style_classes (GTK_ORIENTABLE (box));
@@ -4832,6 +4866,55 @@ gtk_flow_box_invalidate_sort (GtkFlowBox *box)
                        (GCompareDataFunc)gtk_flow_box_sort, box);
       gtk_widget_queue_resize (GTK_WIDGET (box));
     }
+}
+
+/**
+ * gtk_flow_box_set_show_incomplete_lines:
+ * @box: a #GtkFlowBox
+ * @show_incomplete_lines: %TRUE to hide uneven rows,
+ *   %FALSE otherwise
+ *
+ * Sets the #GtkFlowBox:show-incomplete-lines property, controlling
+ * whether complete lines of items are shown or hidden from the user.
+ * See the description of #GtkFlowBox:show-incomplete-lines for more
+ * information.
+ *
+ * Since: 3.18
+ */
+void
+gtk_flow_box_set_show_incomplete_lines (GtkFlowBox *box,
+                                   gboolean    show_incomplete_lines)
+{
+  g_return_if_fail (GTK_IS_FLOW_BOX (box));
+
+  show_incomplete_lines = show_incomplete_lines != FALSE;
+
+  if (BOX_PRIV (box)->show_incomplete_lines != show_incomplete_lines)
+    {
+        BOX_PRIV (box)->show_incomplete_lines = show_incomplete_lines;
+
+        g_object_notify_by_pspec (G_OBJECT (box), props[PROP_SHOW_INCOMPLETE_LINES]);
+        gtk_widget_queue_resize (GTK_WIDGET (box));
+    }
+}
+
+/**
+ * gtk_flow_box_get_show_incomplete_lines:
+ * @box: a #GtkFlowBox
+ *
+ * Returns whether uneven rows are hidden. See
+ * gtk_flow_box_set_show_incomplete_lines().
+ *
+ * Returns: %TRUE if uneven rows are hidden.
+ *
+ * Since: 3.18
+ */
+gboolean
+gtk_flow_box_get_show_incomplete_lines (GtkFlowBox *box)
+{
+  g_return_val_if_fail (GTK_IS_FLOW_BOX (box), FALSE);
+
+  return BOX_PRIV (box)->show_incomplete_lines;
 }
 
 /* vim:set foldmethod=marker expandtab: */

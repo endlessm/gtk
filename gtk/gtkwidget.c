@@ -7425,6 +7425,9 @@ _gtk_widget_run_controllers (GtkWidget           *widget,
     {
       GList *next = l->next;
 
+      if (!WIDGET_REALIZED_FOR_EVENT (widget, event))
+        break;
+
       data = l->data;
 
       if (data->controller == NULL)
@@ -7448,6 +7451,28 @@ _gtk_widget_run_controllers (GtkWidget           *widget,
   g_object_unref (widget);
 
   return handled;
+}
+
+static void
+cancel_event_sequence_on_hierarchy (GtkWidget        *widget,
+                                    GtkWidget        *event_widget,
+                                    GdkEventSequence *sequence)
+{
+  gboolean cancel = TRUE;
+
+  while (event_widget)
+    {
+      if (event_widget == widget)
+        cancel = FALSE;
+      else if (cancel)
+        _gtk_widget_cancel_sequence (event_widget, sequence);
+      else
+        _gtk_widget_set_sequence_state_internal (event_widget, sequence,
+                                                 GTK_EVENT_SEQUENCE_DENIED,
+                                                 NULL);
+
+      event_widget = gtk_widget_get_parent (event_widget);
+    }
 }
 
 gboolean
@@ -17154,7 +17179,6 @@ event_controller_sequence_state_changed (GtkGesture            *gesture,
 {
   gboolean handled = FALSE;
   GtkWidget *event_widget;
-  gboolean cancel = TRUE;
   const GdkEvent *event;
 
   handled = _gtk_widget_set_sequence_state_internal (widget, sequence,
@@ -17169,20 +17193,7 @@ event_controller_sequence_state_changed (GtkGesture            *gesture,
     return;
 
   event_widget = gtk_get_event_widget ((GdkEvent *) event);
-
-  while (event_widget)
-    {
-      if (event_widget == widget)
-        cancel = FALSE;
-      else if (cancel)
-        _gtk_widget_cancel_sequence (event_widget, sequence);
-      else
-        _gtk_widget_set_sequence_state_internal (event_widget, sequence,
-                                                 GTK_EVENT_SEQUENCE_DENIED,
-                                                 NULL);
-
-      event_widget = gtk_widget_get_parent (event_widget);
-    }
+  cancel_event_sequence_on_hierarchy (widget, event_widget, sequence);
 }
 
 static EventControllerData *

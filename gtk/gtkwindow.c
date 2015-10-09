@@ -12361,6 +12361,9 @@ ensure_state_flag_backdrop (GtkWidget *widget)
   GdkWindow *window;
   gboolean window_focused = TRUE;
 
+  if (g_strcmp0 (g_getenv ("GTK_BACKDROP_STYLING"), "0") == 0)
+    return;
+
   window = _gtk_widget_get_window (widget);
 
   window_focused = gdk_window_get_state (window) & GDK_WINDOW_STATE_FOCUSED;

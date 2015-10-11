@@ -264,12 +264,12 @@ get_box_border (GtkCssStyle *style,
 
 static void
 get_box_padding (GtkCssStyle *style,
-                 GtkBorder   *border)
+                 GtkBorder   *padding)
 {
-  border->top = get_number (style, GTK_CSS_PROPERTY_PADDING_TOP);
-  border->left = get_number (style, GTK_CSS_PROPERTY_PADDING_LEFT);
-  border->bottom = get_number (style, GTK_CSS_PROPERTY_PADDING_BOTTOM);
-  border->right = get_number (style, GTK_CSS_PROPERTY_PADDING_RIGHT);
+  padding->top = get_number (style, GTK_CSS_PROPERTY_PADDING_TOP);
+  padding->left = get_number (style, GTK_CSS_PROPERTY_PADDING_LEFT);
+  padding->bottom = get_number (style, GTK_CSS_PROPERTY_PADDING_BOTTOM);
+  padding->right = get_number (style, GTK_CSS_PROPERTY_PADDING_RIGHT);
 }
 
 void

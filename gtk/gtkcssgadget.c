@@ -49,6 +49,30 @@ static GParamSpec *properties[NUM_PROPERTIES];
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (GtkCssGadget, gtk_css_gadget, G_TYPE_OBJECT,
                                   G_ADD_PRIVATE (GtkCssGadget))
 
+void
+style_changed_cb (GtkCssNode   *node,
+                  GtkCssStyle  *old_style,
+                  GtkCssStyle  *new_style,
+                  GtkCssGadget *gadget)
+{
+  static GtkBitmask *affects_size = NULL;
+  GtkBitmask *changes;
+  GtkWidget *widget = gtk_css_gadget_get_owner (gadget);
+
+  changes = _gtk_bitmask_new ();
+  changes = gtk_css_style_add_difference (changes, old_style, new_style);
+
+  if (G_UNLIKELY (affects_size == NULL))
+    affects_size = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_SIZE | GTK_CSS_AFFECTS_CLIP);
+
+  if (_gtk_bitmask_intersects (changes, affects_size))
+    gtk_widget_queue_resize (widget);
+  else
+    gtk_widget_queue_draw (widget);
+
+  _gtk_bitmask_free (changes);
+}
+
 static void
 gtk_css_gadget_real_get_preferred_size (GtkCssGadget   *gadget,
                                         GtkOrientation  orientation,
@@ -136,6 +160,13 @@ gtk_css_gadget_set_property (GObject      *object,
   }
 }
 
+void gtk_css_gadget_constructed (GObject *object)
+{
+  GtkCssGadget *gadget = GTK_CSS_GADGET (object);
+  GtkCssGadgetPrivate *priv = gtk_css_gadget_get_instance_private (gadget);
+  g_signal_connect (priv->node, "style-changed", (GCallback) style_changed_cb, gadget);
+}
+
 static void
 gtk_css_gadget_finalize (GObject *object)
 {
@@ -153,6 +184,7 @@ gtk_css_gadget_class_init (GtkCssGadgetClass *klass)
 
   object_class->get_property = gtk_css_gadget_get_property;
   object_class->set_property = gtk_css_gadget_set_property;
+  object_class->constructed = gtk_css_gadget_constructed;
   object_class->finalize = gtk_css_gadget_finalize;
 
   klass->get_preferred_size = gtk_css_gadget_real_get_preferred_size;
@@ -425,27 +457,3 @@ gtk_css_gadget_draw (GtkCssGadget *gadget,
                                   width - margin.left - margin.right,
                                   height - margin.top - margin.bottom);
 }
-
-void
-gtk_css_node_style_changed_for_widget (GtkCssNode  *node,
-                                       GtkCssStyle *old_style,
-                                       GtkCssStyle *new_style,
-                                       GtkWidget    *widget)
-{
-  static GtkBitmask *affects_size = NULL;
-  GtkBitmask *changes;
-  
-  changes = _gtk_bitmask_new ();
-  changes = gtk_css_style_add_difference (changes, old_style, new_style);
-
-  if (G_UNLIKELY (affects_size == NULL))
-    affects_size = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_SIZE | GTK_CSS_AFFECTS_CLIP);
-
-  if (_gtk_bitmask_intersects (changes, affects_size))
-    gtk_widget_queue_resize (widget);
-  else
-    gtk_widget_queue_draw (widget);
-
-  _gtk_bitmask_free (changes);
-}
-

@@ -8138,10 +8138,10 @@ gtk_widget_real_style_updated (GtkWidget *widget)
               affects_redraw = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_REDRAW);
             }
 
-          if (changes == NULL || _gtk_bitmask_intersects (changes, affects_size))
-            gtk_widget_queue_resize (widget);
-          else if (_gtk_bitmask_intersects (changes, affects_redraw))
-            gtk_widget_queue_draw (widget);
+          // if (changes == NULL || _gtk_bitmask_intersects (changes, affects_size))
+          //   gtk_widget_queue_resize (widget);
+          // else if (_gtk_bitmask_intersects (changes, affects_redraw))
+          //   gtk_widget_queue_draw (widget);
         }
     }
   else

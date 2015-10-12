@@ -58,6 +58,23 @@ gtk_border_copy (const GtkBorder *border_)
 }
 
 /**
+ * gtk_border_equal:
+ * @border_1: a #GtkBorder-struct
+ * @border_2: a #GtkBorder-struct
+ *
+ * Returns:
+ */
+gboolean
+gtk_border_equal (const GtkBorder *border_1, const GtkBorder *border_2)
+{
+  g_return_val_if_fail (border_1 != NULL, FALSE);
+  g_return_val_if_fail (border_2 != NULL, FALSE);
+
+  return memcmp (border_1, border_2, sizeof (GtkBorder)) == 0;
+}
+
+
+/**
  * gtk_border_free:
  * @border_: a #GtkBorder-struct
  *

@@ -62,6 +62,8 @@ GDK_AVAILABLE_IN_ALL
 GtkBorder *gtk_border_new      (void) G_GNUC_MALLOC;
 GDK_AVAILABLE_IN_ALL
 GtkBorder *gtk_border_copy     (const GtkBorder *border_);
+GDK_AVAILABLE_IN_3_20
+gboolean gtk_border_equal     (const GtkBorder *border_1, const GtkBorder *border_2);
 GDK_AVAILABLE_IN_ALL
 void       gtk_border_free     (GtkBorder       *border_);
 

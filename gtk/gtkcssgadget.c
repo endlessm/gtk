@@ -34,6 +34,7 @@ typedef struct _GtkCssGadgetPrivate GtkCssGadgetPrivate;
 struct _GtkCssGadgetPrivate {
   GtkCssNode *node;
   GtkWidget *owner;
+  GtkBorder extents;
 };
 
 enum {
@@ -49,15 +50,74 @@ static GParamSpec *properties[NUM_PROPERTIES];
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (GtkCssGadget, gtk_css_gadget, G_TYPE_OBJECT,
                                   G_ADD_PRIVATE (GtkCssGadget))
 
-void
+static gint
+get_number (GtkCssStyle *style,
+            guint        property)
+{
+  double d = _gtk_css_number_value_get (gtk_css_style_get_value (style, property), 100);
+
+  if (d < 1)
+    return ceil (d);
+  else
+    return floor (d);
+}
+
+static void
+get_box_margin (GtkCssStyle *style,
+                GtkBorder   *margin)
+{
+  margin->top = get_number (style, GTK_CSS_PROPERTY_MARGIN_TOP);
+  margin->left = get_number (style, GTK_CSS_PROPERTY_MARGIN_LEFT);
+  margin->bottom = get_number (style, GTK_CSS_PROPERTY_MARGIN_BOTTOM);
+  margin->right = get_number (style, GTK_CSS_PROPERTY_MARGIN_RIGHT);
+}
+
+static void
+get_box_border (GtkCssStyle *style,
+                GtkBorder   *border)
+{
+  border->top = get_number (style, GTK_CSS_PROPERTY_BORDER_TOP_WIDTH);
+  border->left = get_number (style, GTK_CSS_PROPERTY_BORDER_LEFT_WIDTH);
+  border->bottom = get_number (style, GTK_CSS_PROPERTY_BORDER_BOTTOM_WIDTH);
+  border->right = get_number (style, GTK_CSS_PROPERTY_BORDER_RIGHT_WIDTH);
+}
+
+static void
+get_box_padding (GtkCssStyle *style,
+                 GtkBorder   *padding)
+{
+  padding->top = get_number (style, GTK_CSS_PROPERTY_PADDING_TOP);
+  padding->left = get_number (style, GTK_CSS_PROPERTY_PADDING_LEFT);
+  padding->bottom = get_number (style, GTK_CSS_PROPERTY_PADDING_BOTTOM);
+  padding->right = get_number (style, GTK_CSS_PROPERTY_PADDING_RIGHT);
+}
+
+static void
+get_box_extents (GtkCssStyle *style,
+                 GtkBorder   *extents)
+{
+  GtkBorder margin, border, padding;
+  get_box_margin (style, &margin);
+  get_box_border (style, &border);
+  get_box_padding (style, &padding);
+  extents->top = margin.top + border.top + padding.top;
+  extents->left = margin.left + border.left + padding.left;
+  extents->bottom = margin.bottom + border.bottom + padding.bottom;
+  extents->right = margin.right + border.right + padding.right;
+}
+
+static void
 style_changed_cb (GtkCssNode   *node,
                   GtkCssStyle  *old_style,
                   GtkCssStyle  *new_style,
                   GtkCssGadget *gadget)
 {
+  GtkCssGadgetPrivate *priv = gtk_css_gadget_get_instance_private (gadget);
   static GtkBitmask *affects_size = NULL;
   GtkBitmask *changes;
   GtkWidget *widget = gtk_css_gadget_get_owner (gadget);
+  GtkBorder *old_extents = gtk_border_copy (&priv->extents);
+  gboolean do_resize = FALSE;
 
   changes = _gtk_bitmask_new ();
   changes = gtk_css_style_add_difference (changes, old_style, new_style);
@@ -66,6 +126,16 @@ style_changed_cb (GtkCssNode   *node,
     affects_size = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_SIZE | GTK_CSS_AFFECTS_CLIP);
 
   if (_gtk_bitmask_intersects (changes, affects_size))
+    {
+      get_box_extents (new_style, &priv->extents);
+      do_resize = !gtk_border_equal (&priv->extents, old_extents);
+    }
+
+  if (_gtk_bitmask_get (changes, GTK_CSS_PROPERTY_MIN_WIDTH) ||
+      _gtk_bitmask_get (changes, GTK_CSS_PROPERTY_MIN_HEIGHT))
+    do_resize = TRUE;
+
+  if (do_resize)
     gtk_widget_queue_resize (widget);
   else
     gtk_widget_queue_draw (widget);
@@ -262,48 +332,6 @@ gtk_css_gadget_remove_class (GtkCssGadget *gadget,
   gtk_css_node_remove_class (priv->node, quark);
 }
 
-static gint
-get_number (GtkCssStyle *style,
-            guint        property)
-{
-  double d = _gtk_css_number_value_get (gtk_css_style_get_value (style, property), 100);
-
-  if (d < 1)
-    return ceil (d);
-  else
-    return floor (d);
-}
-
-static void
-get_box_margin (GtkCssStyle *style,
-                GtkBorder   *margin)
-{
-  margin->top = get_number (style, GTK_CSS_PROPERTY_MARGIN_TOP);
-  margin->left = get_number (style, GTK_CSS_PROPERTY_MARGIN_LEFT);
-  margin->bottom = get_number (style, GTK_CSS_PROPERTY_MARGIN_BOTTOM);
-  margin->right = get_number (style, GTK_CSS_PROPERTY_MARGIN_RIGHT);
-}
-
-static void
-get_box_border (GtkCssStyle *style,
-                GtkBorder   *border)
-{
-  border->top = get_number (style, GTK_CSS_PROPERTY_BORDER_TOP_WIDTH);
-  border->left = get_number (style, GTK_CSS_PROPERTY_BORDER_LEFT_WIDTH);
-  border->bottom = get_number (style, GTK_CSS_PROPERTY_BORDER_BOTTOM_WIDTH);
-  border->right = get_number (style, GTK_CSS_PROPERTY_BORDER_RIGHT_WIDTH);
-}
-
-static void
-get_box_padding (GtkCssStyle *style,
-                 GtkBorder   *padding)
-{
-  padding->top = get_number (style, GTK_CSS_PROPERTY_PADDING_TOP);
-  padding->left = get_number (style, GTK_CSS_PROPERTY_PADDING_LEFT);
-  padding->bottom = get_number (style, GTK_CSS_PROPERTY_PADDING_BOTTOM);
-  padding->right = get_number (style, GTK_CSS_PROPERTY_PADDING_RIGHT);
-}
-
 void
 gtk_css_gadget_get_preferred_size (GtkCssGadget   *gadget,
                                    GtkOrientation  orientation,
@@ -313,27 +341,24 @@ gtk_css_gadget_get_preferred_size (GtkCssGadget   *gadget,
                                    gint           *minimum_baseline,
                                    gint           *natural_baseline)
 {
+  GtkCssGadgetPrivate *priv = gtk_css_gadget_get_instance_private (gadget);
   GtkCssStyle *style;
-  GtkBorder margin, border, padding;
   int min_size, max_size, extra_size, extra_opposite, extra_baseline;
 
   style = gtk_css_gadget_get_style (gadget);
-  get_box_margin (style, &margin);
-  get_box_border (style, &border);
-  get_box_padding (style, &padding);
   if (orientation == GTK_ORIENTATION_HORIZONTAL)
     {
-      extra_size = margin.left + margin.right + border.left + border.right + padding.left + padding.right;
-      extra_opposite = margin.top + margin.bottom + border.top + border.bottom + padding.top + padding.bottom;
-      extra_baseline = margin.left + border.left + padding.left;
+      extra_size = priv->extents.left + priv->extents.right;
+      extra_opposite = priv->extents.top + priv->extents.bottom;
+      extra_baseline = priv->extents.left;
       min_size = get_number (style, GTK_CSS_PROPERTY_MIN_WIDTH);
       max_size = get_number (style, GTK_CSS_PROPERTY_MAX_WIDTH);
     }
   else
     {
-      extra_size = margin.top + margin.bottom + border.top + border.bottom + padding.top + padding.bottom;
-      extra_opposite = margin.left + margin.right + border.left + border.right + padding.left + padding.right;
-      extra_baseline = margin.top + border.top + padding.top;
+      extra_size = priv->extents.top + priv->extents.bottom;
+      extra_opposite = priv->extents.top + priv->extents.bottom;
+      extra_baseline = priv->extents.left;
       min_size = get_number (style, GTK_CSS_PROPERTY_MIN_HEIGHT);
       max_size = get_number (style, GTK_CSS_PROPERTY_MAX_HEIGHT);
     }
@@ -372,27 +397,22 @@ gtk_css_gadget_allocate (GtkCssGadget        *gadget,
                          int                  baseline,
                          GtkAllocation       *out_clip)
 {
+  GtkCssGadgetPrivate *priv = gtk_css_gadget_get_instance_private (gadget);
   GtkAllocation content_allocation;
-  GtkBorder margin, border, padding, shadow, extents;
+  GtkBorder margin, shadow;
   GtkCssStyle *style;
 
   g_return_if_fail (out_clip != NULL);
 
   style = gtk_css_gadget_get_style (gadget);
   get_box_margin (style, &margin);
-  get_box_border (style, &border);
-  get_box_padding (style, &padding);
-  extents.top = margin.top + border.top + padding.top;
-  extents.right = margin.right + border.right + padding.right;
-  extents.bottom = margin.bottom + border.bottom + padding.bottom;
-  extents.left = margin.left + border.left + padding.left;
 
-  content_allocation.x = allocation->x + extents.left;
-  content_allocation.y = allocation->y + extents.top;
-  content_allocation.width = allocation->width - extents.left - extents.right;
-  content_allocation.height = allocation->height - extents.top - extents.bottom;
+  content_allocation.x = allocation->x + priv->extents.left;
+  content_allocation.y = allocation->y + priv->extents.top;
+  content_allocation.width = allocation->width - priv->extents.left - priv->extents.right;
+  content_allocation.height = allocation->height - priv->extents.top - priv->extents.bottom;
   if (baseline >= 0)
-    baseline += extents.top;
+    baseline += priv->extents.top;
 
   g_assert (content_allocation.width >= 0);
   g_assert (content_allocation.height >= 0);
@@ -400,10 +420,10 @@ gtk_css_gadget_allocate (GtkCssGadget        *gadget,
   GTK_CSS_GADGET_GET_CLASS (gadget)->allocate (gadget, &content_allocation, baseline, out_clip);
 
   _gtk_css_shadows_value_get_extents (gtk_css_style_get_value (style, GTK_CSS_PROPERTY_BOX_SHADOW), &shadow);
-  out_clip->x -= extents.left + shadow.left - margin.left;
-  out_clip->y -= extents.top + shadow.top - margin.top;
-  out_clip->width += extents.left + extents.right + shadow.left + shadow.right - margin.left - margin.right;
-  out_clip->height += extents.top + extents.bottom + shadow.top + shadow.bottom - margin.top - margin.bottom;
+  out_clip->x -= priv->extents.left + shadow.left - margin.left;
+  out_clip->y -= priv->extents.top + shadow.top - margin.top;
+  out_clip->width += priv->extents.left + priv->extents.right + shadow.left + shadow.right - margin.left - margin.right;
+  out_clip->height += priv->extents.top + priv->extents.bottom + shadow.top + shadow.bottom - margin.top - margin.bottom;
 }
 
 void
@@ -413,15 +433,13 @@ gtk_css_gadget_draw (GtkCssGadget *gadget,
                      int           height)
 {
   GtkCssGadgetPrivate *priv = gtk_css_gadget_get_instance_private (gadget);
-  GtkBorder margin, border, padding;
+  GtkBorder margin;
   gboolean draw_focus;
   GtkCssStyle *style;
   int contents_width, contents_height;
 
   style = gtk_css_gadget_get_style (gadget);
   get_box_margin (style, &margin);
-  get_box_border (style, &border);
-  get_box_padding (style, &padding);
 
   gtk_css_style_render_background (style,
                                    cr,
@@ -439,17 +457,13 @@ gtk_css_gadget_draw (GtkCssGadget *gadget,
                                0,
                                gtk_css_node_get_junction_sides (priv->node));
 
-  cairo_translate (cr,
-                   margin.left + border.left + padding.left,
-                   margin.top + border.top + padding.top);
-  contents_width = width - margin.left - margin.right - border.left - border.right - padding.left - padding.right;
-  contents_height = height - margin.top - margin.bottom - border.top - border.bottom - padding.top - padding.bottom;
+  cairo_translate (cr, priv->extents.left, priv->extents.right);
+  contents_width = width - priv->extents.left - priv->extents.right;
+  contents_height = height - priv->extents.top - priv->extents.bottom;
 
   draw_focus = GTK_CSS_GADGET_GET_CLASS (gadget)->draw (gadget, cr, contents_width, contents_height);
 
-  cairo_translate (cr,
-                   - (margin.left + border.left + padding.left),
-                   - (margin.top + border.top + padding.top));
+  cairo_translate (cr, - priv->extents.left, - priv->extents.top);
 
   if (draw_focus)
     gtk_css_style_render_outline (style,

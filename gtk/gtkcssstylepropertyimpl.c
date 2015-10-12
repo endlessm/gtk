@@ -1625,6 +1625,24 @@ _gtk_css_style_property_init_properties (void)
                                           NULL,
                                           NULL,
                                           _gtk_css_number_value_new (0, GTK_CSS_PX));
+  gtk_css_style_property_register        ("max-width",
+                                          GTK_CSS_PROPERTY_MAX_WIDTH,
+                                          G_TYPE_NONE,
+                                          GTK_STYLE_PROPERTY_ANIMATED,
+                                          GTK_CSS_AFFECTS_SIZE,
+                                          minmax_parse,
+                                          NULL,
+                                          NULL,
+                                          _gtk_css_number_value_new (0, GTK_CSS_PX));
+  gtk_css_style_property_register        ("max-height",
+                                          GTK_CSS_PROPERTY_MAX_HEIGHT,
+                                          G_TYPE_NONE,
+                                          GTK_STYLE_PROPERTY_ANIMATED,
+                                          GTK_CSS_AFFECTS_SIZE,
+                                          minmax_parse,
+                                          NULL,
+                                          NULL,
+                                          _gtk_css_number_value_new (0, GTK_CSS_PX));
 
   gtk_css_style_property_register        ("transition-property",
                                           GTK_CSS_PROPERTY_TRANSITION_PROPERTY,

@@ -315,7 +315,7 @@ gtk_css_gadget_get_preferred_size (GtkCssGadget   *gadget,
 {
   GtkCssStyle *style;
   GtkBorder margin, border, padding;
-  int min_size, extra_size, extra_opposite, extra_baseline;
+  int min_size, max_size, extra_size, extra_opposite, extra_baseline;
 
   style = gtk_css_gadget_get_style (gadget);
   get_box_margin (style, &margin);
@@ -327,6 +327,7 @@ gtk_css_gadget_get_preferred_size (GtkCssGadget   *gadget,
       extra_opposite = margin.top + margin.bottom + border.top + border.bottom + padding.top + padding.bottom;
       extra_baseline = margin.left + border.left + padding.left;
       min_size = get_number (style, GTK_CSS_PROPERTY_MIN_WIDTH);
+      max_size = get_number (style, GTK_CSS_PROPERTY_MAX_WIDTH);
     }
   else
     {
@@ -334,6 +335,7 @@ gtk_css_gadget_get_preferred_size (GtkCssGadget   *gadget,
       extra_opposite = margin.left + margin.right + border.left + border.right + padding.left + padding.right;
       extra_baseline = margin.top + border.top + padding.top;
       min_size = get_number (style, GTK_CSS_PROPERTY_MIN_HEIGHT);
+      max_size = get_number (style, GTK_CSS_PROPERTY_MAX_HEIGHT);
     }
 
   if (for_size > -1)
@@ -353,7 +355,7 @@ gtk_css_gadget_get_preferred_size (GtkCssGadget   *gadget,
   g_warn_if_fail (*minimum <= *natural);
 
   *minimum = MAX (min_size, *minimum);
-  *natural = MAX (min_size, *natural);
+  *natural = MAX (MAX (min_size, *natural), max_size);
 
   *minimum += extra_size;
   *natural += extra_size;

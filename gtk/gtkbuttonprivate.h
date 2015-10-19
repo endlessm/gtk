@@ -20,6 +20,7 @@
 #define __GTK_BUTTON_PRIVATE_H__
 
 #include "gtkactionhelper.h"
+#include "gtkcssgadgetprivate.h"
 #include "gtkgesturesingle.h"
 #include "deprecated/gtkaction.h"
 
@@ -38,6 +39,7 @@ struct _GtkButtonPrivate
   gchar                 *label_text;
 
   GtkGesture            *gesture;
+  GtkCssGadget          *gadget;
 
   gfloat                 xalign;
   gfloat                 yalign;

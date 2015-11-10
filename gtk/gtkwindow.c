@@ -5193,6 +5193,9 @@ gtk_window_update_csd_size (GtkWindow *window,
   GtkWindowPrivate *priv = window->priv;
   GtkBorder window_border = { 0 };
 
+  if (priv->type != GTK_WINDOW_TOPLEVEL)
+    return;
+
   if (priv->decorated &&
       !priv->fullscreen)
     {
@@ -5403,7 +5406,11 @@ gtk_window_translate_csd_pos (GtkWindow *window,
 {
   GtkWindowPrivate *priv = window->priv;
 
-  if (priv->decorated)
+  if (priv->type != GTK_WINDOW_TOPLEVEL)
+    return;
+
+  if (priv->decorated &&
+      !priv->fullscreen)
     {
       GtkBorder window_border = { 0 };
       gint title_height = 0;
@@ -5950,17 +5957,14 @@ gtk_window_should_use_csd (GtkWindow *window)
   GtkWindowPrivate *priv = window->priv;
   const gchar *csd_env;
 
+  if (priv->csd_requested)
+    return TRUE;
+
   if (!priv->decorated)
     return FALSE;
 
   if (priv->type == GTK_WINDOW_POPUP)
     return FALSE;
-
-  if (priv->csd_requested)
-    return TRUE;
-
-  if (priv->use_client_shadow)
-    return TRUE;
 
 #ifdef GDK_WINDOWING_BROADWAY
   if (GDK_IS_BROADWAY_DISPLAY (gtk_widget_get_display (GTK_WIDGET (window))))

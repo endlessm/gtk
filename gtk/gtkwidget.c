@@ -8194,7 +8194,6 @@ static void
 gtk_widget_real_state_flags_changed (GtkWidget     *widget,
                                      GtkStateFlags  old_state)
 {
-  gtk_widget_update_pango_context (widget);
 }
 
 static void

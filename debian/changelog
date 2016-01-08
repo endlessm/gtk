@@ -1,3 +1,9 @@
+gtk+3.0 (3.18.6-0) master; urgency=medium
+
+  * Endless release. We are forcing a lower version for jenkins.
+
+ -- Matt Watson <mattdangerw@gmail.com>  Thu, 07 Jan 2016 16:28:34 -0800
+
 gtk+3.0 (3.18.6-1) unstable; urgency=medium
 
   * New upstream release.

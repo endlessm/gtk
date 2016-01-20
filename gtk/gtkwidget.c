@@ -8201,46 +8201,8 @@ gtk_widget_real_style_updated (GtkWidget *widget)
 {
   GtkWidgetPrivate *priv = widget->priv;
 
+  gtk_widget_update_pango_context (widget);
   gtk_widget_update_alpha (widget);
-
-  if (widget->priv->context)
-    {
-      const GtkBitmask *changes = _gtk_style_context_get_changes (widget->priv->context);
-      gboolean has_text = gtk_widget_peek_pango_context (widget) != NULL;
-      static GtkBitmask *affects_size, *affects_redraw, *affects_allocate, *affects_font, *affects_text;
-
-      if (G_UNLIKELY (affects_size == NULL))
-        {
-          affects_size = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_SIZE);
-          affects_allocate = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_CLIP);
-          affects_redraw = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_REDRAW);
-          affects_font = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_FONT);
-          affects_text = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_TEXT);
-        }
-
-      if (changes == NULL ||
-          (has_text && _gtk_bitmask_intersects (changes, affects_font)))
-        gtk_widget_update_pango_context (widget);
-
-      if (widget->priv->anchored)
-        {
-
-          if (changes == NULL || _gtk_bitmask_intersects (changes, affects_size) ||
-              (has_text && _gtk_bitmask_intersects (changes, affects_text)))
-            gtk_widget_queue_resize (widget);
-          else if (_gtk_bitmask_intersects (changes, affects_allocate))
-            gtk_widget_queue_allocate (widget);
-          else if (_gtk_bitmask_intersects (changes, affects_redraw))
-            gtk_widget_queue_draw (widget);
-        }
-    }
-  else
-    {
-      gtk_widget_update_pango_context (widget);
-
-      if (widget->priv->anchored)
-        gtk_widget_queue_resize (widget);
-    }
 
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   if (priv->style != NULL &&
@@ -8256,6 +8218,34 @@ gtk_widget_real_style_updated (GtkWidget *widget)
     }
   G_GNUC_END_IGNORE_DEPRECATIONS;
 
+  if (widget->priv->context)
+    {
+      const GtkBitmask *changes = _gtk_style_context_get_changes (widget->priv->context);
+
+      if (widget->priv->anchored)
+        {
+          static GtkBitmask *affects_size, *affects_redraw, *affects_allocate;
+
+          if (G_UNLIKELY (affects_size == NULL))
+            {
+              affects_size = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_SIZE);
+              affects_allocate = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_CLIP);
+              affects_redraw = _gtk_css_style_property_get_mask_affecting (GTK_CSS_AFFECTS_REDRAW);
+            }
+
+          if (changes == NULL || _gtk_bitmask_intersects (changes, affects_size))
+            gtk_widget_queue_resize (widget);
+          else if (_gtk_bitmask_intersects (changes, affects_allocate))
+            gtk_widget_queue_allocate (widget);
+          else if (_gtk_bitmask_intersects (changes, affects_redraw))
+            gtk_widget_queue_draw (widget);
+        }
+    }
+  else
+    {
+      if (widget->priv->anchored)
+        gtk_widget_queue_resize (widget);
+    }
 }
 
 static gboolean

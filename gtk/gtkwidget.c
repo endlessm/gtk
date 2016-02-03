@@ -4302,6 +4302,33 @@ _gtk_widget_cancel_sequence (GtkWidget        *widget,
   return handled;
 }
 
+static gdouble beginning = 0.0;
+static void
+print_draw (GtkWidget    *widget,
+            cairo_t      *cr)
+{
+  gint parents = 0;
+  GtkWidget *parent = widget;
+  while (parent = gtk_widget_get_parent (parent)) {
+        parents++;
+  }
+  gdouble now = g_get_monotonic_time () / 1000000.0;
+  g_print("%f DRAW %*s %s\n", now - beginning, parents, "  ", g_type_name (G_OBJECT_TYPE (widget)));
+}
+
+static void
+print_allocate (GtkWidget    *widget,
+                GdkRectangle *allocation)
+{
+  gint parents = 0;
+  GtkWidget *parent = widget;
+  while (parent = gtk_widget_get_parent (parent)) {
+        parents++;
+  }
+  gdouble now = g_get_monotonic_time () / 1000000.0;
+  g_print("%f ALLOCATE %*s %s\n", now - beginning, parents, "  ", g_type_name (G_OBJECT_TYPE (widget)));
+}
+
 static void
 gtk_widget_init (GTypeInstance *instance, gpointer g_class)
 {
@@ -4371,6 +4398,13 @@ gtk_widget_init (GTypeInstance *instance, gpointer g_class)
   priv->style = gtk_widget_get_default_style ();
   G_GNUC_END_IGNORE_DEPRECATIONS;
   g_object_ref (priv->style);
+
+  if (g_getenv ("GTK_PRINT_DRAW"))
+    g_signal_connect_after (widget, "draw", (GCallback) print_draw, NULL);
+  if (g_getenv ("GTK_PRINT_ALLOCATE"))
+    g_signal_connect_after (widget, "size-allocate", (GCallback) print_allocate, NULL);
+  if (beginning == 0)
+    beginning = g_get_monotonic_time () / 1000000.0;
 }
 
 

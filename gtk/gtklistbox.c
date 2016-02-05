@@ -1853,7 +1853,6 @@ gtk_list_box_multipress_gesture_pressed (GtkGestureMultiPress *gesture,
       gtk_widget_set_state_flags (GTK_WIDGET (priv->active_row),
                                   GTK_STATE_FLAG_ACTIVE,
                                   FALSE);
-      gtk_widget_queue_draw (GTK_WIDGET (box));
 
       if (n_press == 2 && !priv->activate_single_click)
         gtk_list_box_activate (box, row);
@@ -1929,7 +1928,6 @@ gtk_list_box_multipress_gesture_released (GtkGestureMultiPress *gesture,
 
   priv->active_row = NULL;
   priv->active_row_active = FALSE;
-  gtk_widget_queue_draw (GTK_WIDGET (box));
 
   g_object_unref (box);
 }

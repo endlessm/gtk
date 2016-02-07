@@ -3282,6 +3282,7 @@ GtkVolumeButton.button {
     box-shadow: 0 2px 6px 2px transparentize(black, 0.8),
                 0 0 0 1px $_wm_border_backdrop;
   }
+  &.fullscreen,
   &.tiled {
     border-radius: 0;
   }

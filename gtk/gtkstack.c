@@ -941,6 +941,11 @@ gtk_stack_transition_cb (GtkWidget     *widget,
   if (now < priv->end_time)
     t = (now - priv->start_time) / (double) (priv->end_time - priv->start_time);
 
+  g_print("tick callback %lld %lld %f\n",
+          gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget)),
+          gdk_frame_clock_get_frame_counter (gtk_widget_get_frame_clock (widget)),
+          t);
+
   /* Finish animation early if not mapped anymore */
   if (!gtk_widget_get_mapped (widget))
     t = 1.0;
@@ -2146,6 +2151,9 @@ gtk_stack_draw (GtkWidget *widget,
                * callback. We don't do this earlier to avoid a jerky first frame
                */
               gtk_stack_schedule_ticks (stack);
+              g_print("adding tick callback %lld %lld\n",
+                      gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget)),
+                      gdk_frame_clock_get_frame_counter (gtk_widget_get_frame_clock (widget)));
             }
 
           switch (priv->active_transition_type)

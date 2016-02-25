@@ -26,7 +26,6 @@
 #include "gtktypebuiltins.h"
 #include "gtkprivate.h"
 #include "gtksizegroup-private.h"
-#include "gtksizerequestcacheprivate.h"
 #include "gtkwidgetprivate.h"
 #include "gtkcontainerprivate.h"
 
@@ -204,99 +203,15 @@ _gtk_size_group_get_widget_peers (GtkWidget      *for_widget,
 }
 
 static void
-real_queue_resize (GtkWidget          *widget,
-		   GtkQueueResizeFlags flags)
-{
-  GtkWidget *container;
-
-  _gtk_widget_set_alloc_needed (widget, TRUE);
-  _gtk_size_request_cache_clear (_gtk_widget_peek_request_cache (widget));
-
-  container = _gtk_widget_get_parent (widget);
-  if (!container &&
-      _gtk_widget_is_toplevel (widget) && GTK_IS_CONTAINER (widget))
-    container = widget;
-
-  if (container)
-    {
-      if (flags & GTK_QUEUE_RESIZE_INVALIDATE_ONLY)
-	_gtk_container_resize_invalidate (GTK_CONTAINER (container));
-      else
-	_gtk_container_queue_resize (GTK_CONTAINER (container));
-    }
-}
-
-static void
-queue_resize_on_widget (GtkWidget          *widget,
-			gboolean            check_siblings,
-			GtkQueueResizeFlags flags)
-{
-  GHashTable *widgets;
-  GHashTable *groups;
-  GtkWidget *parent;
-
-  widgets = g_hash_table_new (NULL, NULL);
-  groups = g_hash_table_new (NULL, NULL);
-
-  parent = widget;
-
-  while (parent)
-    {
-      GSList *widget_groups;
-      GHashTableIter iter;
-      gpointer current;
-
-      if (widget == parent && !check_siblings)
-	{
-	  real_queue_resize (widget, flags);
-          parent = _gtk_widget_get_parent (parent);
-	  continue;
-	}
-
-      widget_groups = _gtk_widget_get_sizegroups (parent);
-      if (!widget_groups)
-	{
-	  if (widget == parent)
-	    real_queue_resize (widget, flags);
-
-          parent = _gtk_widget_get_parent (parent);
-	  continue;
-	}
-
-      g_hash_table_remove_all (widgets);
-      g_hash_table_remove_all (groups);
-      add_widget_to_closure (widgets, groups, parent, -1);
-
-      g_hash_table_iter_init (&iter, widgets);
-      while (g_hash_table_iter_next (&iter, &current, NULL))
-	{
-	  if (current == parent)
-	    {
-	      if (widget == parent)
-		real_queue_resize (parent, flags);
-	    }
-	  else if (current == widget)
-            {
-              g_warning ("A container and its child are part of this SizeGroup");
-            }
-	  else
-	    queue_resize_on_widget (current, FALSE, flags);
-	}
-
-      parent = _gtk_widget_get_parent (parent);
-    }
-
-  g_hash_table_destroy (widgets);
-  g_hash_table_destroy (groups);
-}
-
-static void
-queue_resize_on_group (GtkSizeGroup       *size_group)
+queue_resize_on_group (GtkSizeGroup *size_group)
 {
   GtkSizeGroupPrivate *priv = size_group->priv;
+  GSList *list;
 
-  if (priv->widgets)
-    queue_resize_on_widget (priv->widgets->data, TRUE, 0);
+  for (list = priv->widgets; list; list = list->next)
+    {
+      gtk_widget_queue_resize (list->data);
+    }
 }
 
 static void
@@ -602,19 +517,6 @@ GSList *
 gtk_size_group_get_widgets (GtkSizeGroup *size_group)
 {
   return size_group->priv->widgets;
-}
-
-/**
- * _gtk_size_group_queue_resize:
- * @widget: a #GtkWidget
- * 
- * Queue a resize on a widget, and on all other widgets grouped with this widget.
- **/
-void
-_gtk_size_group_queue_resize (GtkWidget           *widget,
-			      GtkQueueResizeFlags  flags)
-{
-  queue_resize_on_widget (widget, TRUE, flags);
 }
 
 typedef struct {

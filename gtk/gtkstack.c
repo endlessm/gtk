@@ -213,6 +213,8 @@ G_DEFINE_TYPE_WITH_PRIVATE (GtkStack, gtk_stack, GTK_TYPE_CONTAINER)
 static void
 gtk_stack_init (GtkStack *stack)
 {
+  GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
+  priv->transition_pos = 1.0;
 }
 
 static void

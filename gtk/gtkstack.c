@@ -764,16 +764,6 @@ gtk_stack_set_child_property (GtkContainer *container,
     }
 }
 
-/* From clutter-easing.c, based on Robert Penner's
- * infamous easing equations, MIT license.
- */
-static double
-ease_out_cubic (double t)
-{
-  double p = t - 1;
-  return p * p * p + 1;
-}
-
 static inline gboolean
 is_left_transition (GtkStackTransitionType transition_type)
 {
@@ -861,14 +851,13 @@ get_bin_window_x (GtkStack            *stack,
 {
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   int x = 0;
-  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   if (gtk_animation_helper_is_running (&priv->animation_helper))
     {
       if (is_left_transition (priv->active_transition_type))
-        x = allocation->width * (1 - ease_out_cubic (progress));
+        x = allocation->width * (1 - gtk_animation_helper_get_ease (&priv->animation_helper));
       if (is_right_transition (priv->active_transition_type))
-        x = -allocation->width * (1 - ease_out_cubic (progress));
+        x = -allocation->width * (1 - gtk_animation_helper_get_ease (&priv->animation_helper));
     }
 
   return x;
@@ -880,14 +869,13 @@ get_bin_window_y (GtkStack            *stack,
 {
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   int y = 0;
-  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   if (gtk_animation_helper_is_running (&priv->animation_helper))
     {
       if (is_up_transition (priv->active_transition_type))
-        y = allocation->height * (1 - ease_out_cubic (progress));
+        y = allocation->height * (1 - gtk_animation_helper_get_ease (&priv->animation_helper));
       if (is_down_transition(priv->active_transition_type))
-        y = -allocation->height * (1 - ease_out_cubic (progress));
+        y = -allocation->height * (1 - gtk_animation_helper_get_ease (&priv->animation_helper));
     }
 
   return y;
@@ -1990,7 +1978,6 @@ gtk_stack_draw_under (GtkWidget *widget,
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   GtkAllocation allocation;
   gint x, y, width, height, pos_x, pos_y;
-  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   gtk_widget_get_allocation (widget, &allocation);
   x = y = 0;
@@ -2002,22 +1989,22 @@ gtk_stack_draw_under (GtkWidget *widget,
     {
     case GTK_STACK_TRANSITION_TYPE_UNDER_DOWN:
       y = 0;
-      height = allocation.height * (ease_out_cubic (progress));
+      height = allocation.height * (gtk_animation_helper_get_ease (&priv->animation_helper));
       pos_y = height;
       break;
     case GTK_STACK_TRANSITION_TYPE_UNDER_UP:
-      y = allocation.height * (1 - ease_out_cubic (progress));
+      y = allocation.height * (1 - gtk_animation_helper_get_ease (&priv->animation_helper));
       height = allocation.height - y;
       pos_y = y - allocation.height;
       break;
     case GTK_STACK_TRANSITION_TYPE_UNDER_LEFT:
-      x = allocation.width * (1 - ease_out_cubic (progress));
+      x = allocation.width * (1 - gtk_animation_helper_get_ease (&priv->animation_helper));
       width = allocation.width - x;
       pos_x = x - allocation.width;
       break;
     case GTK_STACK_TRANSITION_TYPE_UNDER_RIGHT:
       x = 0;
-      width = allocation.width * (ease_out_cubic (progress));
+      width = allocation.width * (gtk_animation_helper_get_ease (&priv->animation_helper));
       pos_x = width;
       break;
     default:
@@ -2374,7 +2361,6 @@ gtk_stack_measure (GtkCssGadget   *gadget,
   GtkWidget *child;
   gint child_min, child_nat;
   GList *l;
-  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   *minimum = 0;
   *natural = 0;
@@ -2415,13 +2401,13 @@ gtk_stack_measure (GtkCssGadget   *gadget,
     {
       if (orientation == GTK_ORIENTATION_VERTICAL && !priv->vhomogeneous)
         {
-          gdouble t = priv->interpolate_size ? ease_out_cubic (progress) : 1.0;
+          gdouble t = priv->interpolate_size ? gtk_animation_helper_get_ease (&priv->animation_helper) : 1.0;
           *minimum = LERP (*minimum, priv->last_visible_widget_height, t);
           *natural = LERP (*natural, priv->last_visible_widget_height, t);
         }
       if (orientation == GTK_ORIENTATION_HORIZONTAL && !priv->hhomogeneous)
         {
-          gdouble t = priv->interpolate_size ? ease_out_cubic (progress) : 1.0;
+          gdouble t = priv->interpolate_size ? gtk_animation_helper_get_ease (&priv->animation_helper) : 1.0;
           *minimum = LERP (*minimum, priv->last_visible_widget_width, t);
           *natural = LERP (*natural, priv->last_visible_widget_width, t);
         }

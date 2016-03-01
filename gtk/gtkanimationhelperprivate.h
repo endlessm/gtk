@@ -46,6 +46,8 @@ gboolean             gtk_animation_helper_is_running   (GtkAnimationHelper *help
 
 gdouble              gtk_animation_helper_get_progress (GtkAnimationHelper *helper);
 
+gdouble              gtk_animation_helper_get_ease     (GtkAnimationHelper *helper);
+
 G_END_DECLS
 
 #endif /* __GTK_ANIMATION_HELPER_PRIVATE_H__ */

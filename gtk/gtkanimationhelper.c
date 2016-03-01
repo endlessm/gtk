@@ -70,3 +70,19 @@ gtk_animation_helper_get_progress (GtkAnimationHelper *helper)
 {
   return helper->is_running ? helper->progress : 1.0;
 }
+
+/* From clutter-easing.c, based on Robert Penner's
+ * infamous easing equations, MIT license.
+ */
+static double
+ease_out_cubic (double t)
+{
+  double p = t - 1;
+  return p * p * p + 1;
+}
+
+gdouble
+gtk_animation_helper_get_ease (GtkAnimationHelper *helper)
+{
+  return ease_out_cubic (gtk_animation_helper_get_progress (helper));
+}

@@ -364,6 +364,7 @@ gtk_private_h_sources =		\
 	gtkaccelmapprivate.h	\
 	gtkactionhelper.h	\
 	gtkallocatedbitmaskprivate.h	\
+	gtkanimationhelperprivate.h	\
 	gtkappchooserprivate.h	\
 	gtkbindingsprivate.h	\
 	gtkbitmaskprivate.h	\
@@ -600,6 +601,7 @@ gtk_base_c_sources = 		\
 	gtkactionhelper.c	\
 	gtkadjustment.c		\
 	gtkallocatedbitmask.c	\
+	gtkanimationhelper.c	\
 	gtkappchooser.c		\
 	gtkappchooserwidget.c	\
 	gtkappchooserbutton.c	\

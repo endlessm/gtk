@@ -25,6 +25,7 @@
 #include "gtkstack.h"
 #include "gtkprivate.h"
 #include "gtkintl.h"
+#include "gtkanimationhelperprivate.h"
 #include "gtkcsscustomgadgetprivate.h"
 #include "gtkcontainerprivate.h"
 #include "gtkwidgetprivate.h"
@@ -143,10 +144,8 @@ typedef struct {
   GtkStackChildInfo *last_visible_child;
   cairo_surface_t *last_visible_surface;
   GtkAllocation last_visible_surface_allocation;
-  gdouble transition_pos;
   guint tick_id;
-  gint64 start_time;
-  gint64 end_time;
+  GtkAnimationHelper animation_helper;
 
   gint last_visible_widget_width;
   gint last_visible_widget_height;
@@ -862,13 +861,14 @@ get_bin_window_x (GtkStack            *stack,
 {
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   int x = 0;
+  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
-  if (priv->transition_pos < 1.0)
+  if (gtk_animation_helper_is_running (&priv->animation_helper))
     {
       if (is_left_transition (priv->active_transition_type))
-        x = allocation->width * (1 - ease_out_cubic (priv->transition_pos));
+        x = allocation->width * (1 - ease_out_cubic (progress));
       if (is_right_transition (priv->active_transition_type))
-        x = -allocation->width * (1 - ease_out_cubic (priv->transition_pos));
+        x = -allocation->width * (1 - ease_out_cubic (progress));
     }
 
   return x;
@@ -880,26 +880,24 @@ get_bin_window_y (GtkStack            *stack,
 {
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   int y = 0;
+  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
-  if (priv->transition_pos < 1.0)
+  if (gtk_animation_helper_is_running (&priv->animation_helper))
     {
       if (is_up_transition (priv->active_transition_type))
-        y = allocation->height * (1 - ease_out_cubic (priv->transition_pos));
+        y = allocation->height * (1 - ease_out_cubic (progress));
       if (is_down_transition(priv->active_transition_type))
-        y = -allocation->height * (1 - ease_out_cubic (priv->transition_pos));
+        y = -allocation->height * (1 - ease_out_cubic (progress));
     }
 
   return y;
 }
 
-static gboolean
-gtk_stack_set_transition_position (GtkStack *stack,
-                                   gdouble   pos)
+static void
+gtk_stack_progress_updated (GtkStack *stack)
 {
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
-  gboolean done;
 
-  priv->transition_pos = pos;
   gtk_widget_queue_draw (GTK_WIDGET (stack));
 
   if (!priv->vhomogeneous || !priv->hhomogeneous)
@@ -914,9 +912,7 @@ gtk_stack_set_transition_position (GtkStack *stack,
                        get_bin_window_x (stack, &allocation), get_bin_window_y (stack, &allocation));
     }
 
-  done = pos >= 1.0;
-
-  if (done)
+  if (!gtk_animation_helper_is_running (&priv->animation_helper))
     {
       if (priv->last_visible_surface != NULL)
         {
@@ -930,8 +926,6 @@ gtk_stack_set_transition_position (GtkStack *stack,
           priv->last_visible_child = NULL;
         }
     }
-
-  return done;
 }
 
 static gboolean
@@ -941,20 +935,17 @@ gtk_stack_transition_cb (GtkWidget     *widget,
 {
   GtkStack *stack = GTK_STACK (widget);
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
-  gint64 now;
-  gdouble t;
 
-  now = gdk_frame_clock_get_frame_time (frame_clock);
-
-  t = 1.0;
-  if (now < priv->end_time)
-    t = (now - priv->start_time) / (double) (priv->end_time - priv->start_time);
+  gtk_animation_helper_next_frame (&priv->animation_helper,
+                                   gdk_frame_clock_get_frame_time (frame_clock));
 
   /* Finish animation early if not mapped anymore */
   if (!gtk_widget_get_mapped (widget))
-    t = 1.0;
+    gtk_animation_helper_finish (&priv->animation_helper);
 
-  if (gtk_stack_set_transition_position (stack, t))
+  gtk_stack_progress_updated (GTK_STACK (widget));
+
+  if (!gtk_animation_helper_is_running (&priv->animation_helper))
     {
       priv->tick_id = 0;
       g_object_notify_by_pspec (G_OBJECT (stack), stack_props[PROP_TRANSITION_RUNNING]);
@@ -1037,17 +1028,17 @@ gtk_stack_start_transition (GtkStack               *stack,
       transition_duration != 0 &&
       priv->last_visible_child != NULL)
     {
-      priv->transition_pos = 0.0;
-      priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
-      priv->end_time = priv->start_time + (transition_duration * 1000);
       priv->active_transition_type = effective_transition_type (stack, transition_type);
       gtk_stack_schedule_ticks (stack);
+      gtk_animation_helper_start (&priv->animation_helper,
+                                  priv->transition_duration * 1000);
     }
   else
     {
       gtk_stack_unschedule_ticks (stack);
       priv->active_transition_type = GTK_STACK_TRANSITION_TYPE_NONE;
-      gtk_stack_set_transition_position (stack, 1.0);
+      gtk_animation_helper_finish (&priv->animation_helper);
+      gtk_stack_progress_updated (GTK_STACK (widget));
     }
 }
 
@@ -1962,6 +1953,7 @@ gtk_stack_draw_crossfade (GtkWidget *widget,
 {
   GtkStack *stack = GTK_STACK (widget);
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
+  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   cairo_push_group (cr);
   gtk_container_propagate_draw (GTK_CONTAINER (stack),
@@ -1969,8 +1961,8 @@ gtk_stack_draw_crossfade (GtkWidget *widget,
                                 cr);
   cairo_save (cr);
 
-  /* Multiply alpha by transition pos */
-  cairo_set_source_rgba (cr, 1, 1, 1, priv->transition_pos);
+  /* Multiply alpha by progress */
+  cairo_set_source_rgba (cr, 1, 1, 1, progress);
   cairo_set_operator (cr, CAIRO_OPERATOR_DEST_IN);
   cairo_paint (cr);
 
@@ -1980,7 +1972,7 @@ gtk_stack_draw_crossfade (GtkWidget *widget,
                                 priv->last_visible_surface_allocation.x,
                                 priv->last_visible_surface_allocation.y);
       cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
-      cairo_paint_with_alpha (cr, MAX (1.0 - priv->transition_pos, 0));
+      cairo_paint_with_alpha (cr, MAX (1.0 - progress, 0));
     }
 
   cairo_restore (cr);
@@ -1998,6 +1990,7 @@ gtk_stack_draw_under (GtkWidget *widget,
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   GtkAllocation allocation;
   gint x, y, width, height, pos_x, pos_y;
+  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   gtk_widget_get_allocation (widget, &allocation);
   x = y = 0;
@@ -2009,22 +2002,22 @@ gtk_stack_draw_under (GtkWidget *widget,
     {
     case GTK_STACK_TRANSITION_TYPE_UNDER_DOWN:
       y = 0;
-      height = allocation.height * (ease_out_cubic (priv->transition_pos));
+      height = allocation.height * (ease_out_cubic (progress));
       pos_y = height;
       break;
     case GTK_STACK_TRANSITION_TYPE_UNDER_UP:
-      y = allocation.height * (1 - ease_out_cubic (priv->transition_pos));
+      y = allocation.height * (1 - ease_out_cubic (progress));
       height = allocation.height - y;
       pos_y = y - allocation.height;
       break;
     case GTK_STACK_TRANSITION_TYPE_UNDER_LEFT:
-      x = allocation.width * (1 - ease_out_cubic (priv->transition_pos));
+      x = allocation.width * (1 - ease_out_cubic (progress));
       width = allocation.width - x;
       pos_x = x - allocation.width;
       break;
     case GTK_STACK_TRANSITION_TYPE_UNDER_RIGHT:
       x = 0;
-      width = allocation.width * (ease_out_cubic (priv->transition_pos));
+      width = allocation.width * (ease_out_cubic (progress));
       pos_x = width;
       break;
     default:
@@ -2155,7 +2148,7 @@ gtk_stack_render (GtkCssGadget *gadget,
 
   if (priv->visible_child)
     {
-      if (priv->transition_pos < 1.0)
+      if (gtk_animation_helper_is_running (&priv->animation_helper))
         {
           if (priv->last_visible_surface == NULL &&
               priv->last_visible_child != NULL)
@@ -2381,6 +2374,7 @@ gtk_stack_measure (GtkCssGadget   *gadget,
   GtkWidget *child;
   gint child_min, child_nat;
   GList *l;
+  gdouble progress = gtk_animation_helper_get_progress (&priv->animation_helper);
 
   *minimum = 0;
   *natural = 0;
@@ -2421,13 +2415,13 @@ gtk_stack_measure (GtkCssGadget   *gadget,
     {
       if (orientation == GTK_ORIENTATION_VERTICAL && !priv->vhomogeneous)
         {
-          gdouble t = priv->interpolate_size ? ease_out_cubic (priv->transition_pos) : 1.0;
+          gdouble t = priv->interpolate_size ? ease_out_cubic (progress) : 1.0;
           *minimum = LERP (*minimum, priv->last_visible_widget_height, t);
           *natural = LERP (*natural, priv->last_visible_widget_height, t);
         }
       if (orientation == GTK_ORIENTATION_HORIZONTAL && !priv->hhomogeneous)
         {
-          gdouble t = priv->interpolate_size ? ease_out_cubic (priv->transition_pos) : 1.0;
+          gdouble t = priv->interpolate_size ? ease_out_cubic (progress) : 1.0;
           *minimum = LERP (*minimum, priv->last_visible_widget_width, t);
           *natural = LERP (*natural, priv->last_visible_widget_width, t);
         }

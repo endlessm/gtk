@@ -145,7 +145,6 @@ typedef struct {
   gboolean interpolate_size;
 
   GtkStackTransitionType active_transition_type;
-  guint active_transition_duration;
 
 } GtkStackPrivate;
 
@@ -201,8 +200,6 @@ static void     gtk_stack_set_child_property             (GtkContainer  *contain
                                                           const GValue  *value,
                                                           GParamSpec    *pspec);
 static void     gtk_stack_unschedule_ticks               (GtkStack      *stack);
-static gboolean gtk_stack_set_transition_position        (GtkStack *stack,
-                                                          gdouble   pos);
 static gint     get_bin_window_x                         (GtkStack      *stack,
                                                           GtkAllocation *allocation);
 static gint     get_bin_window_y                         (GtkStack      *stack,
@@ -213,8 +210,6 @@ G_DEFINE_TYPE_WITH_PRIVATE (GtkStack, gtk_stack, GTK_TYPE_CONTAINER)
 static void
 gtk_stack_init (GtkStack *stack)
 {
-  GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
-  priv->transition_pos = 1.0;
 }
 
 static void
@@ -396,19 +391,6 @@ gtk_stack_unrealize (GtkWidget *widget)
 }
 
 static void
-gtk_stack_unmap (GtkWidget *widget)
-{
-  GtkStack *stack = GTK_STACK (widget);
-  GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
-
-  gtk_stack_unschedule_ticks (stack);
-  if (priv->transition_pos < 1.0)
-    gtk_stack_set_transition_position (stack, 1.0);
-
-  GTK_WIDGET_CLASS (gtk_stack_parent_class)->unmap (widget);
-}
-
-static void
 gtk_stack_class_init (GtkStackClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -424,7 +406,6 @@ gtk_stack_class_init (GtkStackClass *klass)
   widget_class->draw = gtk_stack_draw;
   widget_class->realize = gtk_stack_realize;
   widget_class->unrealize = gtk_stack_unrealize;
-  widget_class->unmap = gtk_stack_unmap;
   widget_class->get_preferred_height = gtk_stack_get_preferred_height;
   widget_class->get_preferred_height_for_width = gtk_stack_get_preferred_height_for_width;
   widget_class->get_preferred_width = gtk_stack_get_preferred_width;
@@ -882,12 +863,8 @@ gtk_stack_set_transition_position (GtkStack *stack,
 {
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   gboolean done;
-  gboolean was_running;
 
-  was_running = gtk_stack_get_transition_running (stack);
   priv->transition_pos = pos;
-  if (was_running != gtk_stack_get_transition_running (stack))
-    g_object_notify_by_pspec (G_OBJECT (stack), stack_props[PROP_TRANSITION_RUNNING]);
   gtk_widget_queue_draw (GTK_WIDGET (stack));
 
   if (!priv->vhomogeneous || !priv->hhomogeneous)
@@ -934,19 +911,18 @@ gtk_stack_transition_cb (GtkWidget     *widget,
 
   now = gdk_frame_clock_get_frame_time (frame_clock);
 
-  if (priv->start_time == 0)
-    {
-      priv->start_time = now;
-      priv->end_time = priv->start_time + (priv->active_transition_duration * 1000);
-    }
-
   t = 1.0;
   if (now < priv->end_time)
     t = (now - priv->start_time) / (double) (priv->end_time - priv->start_time);
 
+  /* Finish animation early if not mapped anymore */
+  if (!gtk_widget_get_mapped (widget))
+    t = 1.0;
+
   if (gtk_stack_set_transition_position (stack, t))
     {
       priv->tick_id = 0;
+      g_object_notify_by_pspec (G_OBJECT (stack), stack_props[PROP_TRANSITION_RUNNING]);
 
       return FALSE;
     }
@@ -963,6 +939,7 @@ gtk_stack_schedule_ticks (GtkStack *stack)
     {
       priv->tick_id =
         gtk_widget_add_tick_callback (GTK_WIDGET (stack), gtk_stack_transition_cb, stack, NULL);
+      g_object_notify_by_pspec (G_OBJECT (stack), stack_props[PROP_TRANSITION_RUNNING]);
     }
 }
 
@@ -975,6 +952,7 @@ gtk_stack_unschedule_ticks (GtkStack *stack)
     {
       gtk_widget_remove_tick_callback (GTK_WIDGET (stack), priv->tick_id);
       priv->tick_id = 0;
+      g_object_notify_by_pspec (G_OBJECT (stack), stack_props[PROP_TRANSITION_RUNNING]);
     }
 }
 
@@ -1024,10 +1002,11 @@ gtk_stack_start_transition (GtkStack               *stack,
       transition_duration != 0 &&
       priv->last_visible_child != NULL)
     {
+      priv->transition_pos = 0.0;
+      priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
+      priv->end_time = priv->start_time + (transition_duration * 1000);
       priv->active_transition_type = effective_transition_type (stack, transition_type);
-      priv->active_transition_duration = transition_duration;
-      priv->start_time = 0;
-      gtk_stack_set_transition_position (stack, 0.0);
+      gtk_stack_schedule_ticks (stack);
     }
   else
     {
@@ -1669,7 +1648,7 @@ gtk_stack_get_transition_running (GtkStack *stack)
 
   g_return_val_if_fail (GTK_IS_STACK (stack), FALSE);
 
-  return (priv->transition_pos < 1.0);
+  return (priv->tick_id != 0);
 }
 
 /**
@@ -2141,10 +2120,6 @@ gtk_stack_draw (GtkWidget *widget,
                */
               gtk_widget_draw (priv->last_visible_child->widget, pattern_cr);
               cairo_destroy (pattern_cr);
-              /* Setup for animation should be done now, we can schedule the tick
-               * callback. We don't do this earlier to avoid a jerky first frame
-               */
-              gtk_stack_schedule_ticks (stack);
             }
 
           switch (priv->active_transition_type)

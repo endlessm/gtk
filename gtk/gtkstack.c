@@ -146,6 +146,7 @@ typedef struct {
   GtkAllocation last_visible_surface_allocation;
   guint tick_id;
   GtkAnimationHelper animation_helper;
+  gboolean first_frame_skipped;
 
   gint last_visible_widget_width;
   gint last_visible_widget_height;
@@ -924,8 +925,11 @@ gtk_stack_transition_cb (GtkWidget     *widget,
   GtkStack *stack = GTK_STACK (widget);
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
 
-  gtk_animation_helper_next_frame (&priv->animation_helper,
-                                   gdk_frame_clock_get_frame_time (frame_clock));
+  if (priv->first_frame_skipped)
+    gtk_animation_helper_next_frame (&priv->animation_helper,
+                                     gdk_frame_clock_get_frame_time (frame_clock));
+  else
+    priv->first_frame_skipped = TRUE;
 
   /* Finish animation early if not mapped anymore */
   if (!gtk_widget_get_mapped (widget))
@@ -1017,6 +1021,7 @@ gtk_stack_start_transition (GtkStack               *stack,
       priv->last_visible_child != NULL)
     {
       priv->active_transition_type = effective_transition_type (stack, transition_type);
+      priv->first_frame_skipped = FALSE;
       gtk_stack_schedule_ticks (stack);
       gtk_animation_helper_start (&priv->animation_helper,
                                   priv->transition_duration * 1000);

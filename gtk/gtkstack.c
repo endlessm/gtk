@@ -138,6 +138,7 @@ typedef struct {
   guint tick_id;
   gint64 start_time;
   gint64 end_time;
+  gboolean first_frame_skipped;
 
   gint last_visible_widget_width;
   gint last_visible_widget_height;
@@ -907,13 +908,25 @@ gtk_stack_transition_cb (GtkWidget     *widget,
   GtkStack *stack = GTK_STACK (widget);
   GtkStackPrivate *priv = gtk_stack_get_instance_private (stack);
   gint64 now;
-  gdouble t;
+  gdouble t = 0.0;
 
   now = gdk_frame_clock_get_frame_time (frame_clock);
 
-  t = 1.0;
-  if (now < priv->end_time)
-    t = (now - priv->start_time) / (double) (priv->end_time - priv->start_time);
+  if (!priv->first_frame_skipped)
+    {
+      priv->first_frame_skipped = TRUE;
+    }
+  else if (priv->start_time == 0)
+    {
+      priv->start_time += now;
+      priv->end_time += now;
+    }
+  else
+    {
+      t = 1.0;
+      if (now < priv->end_time)
+        t = (now - priv->start_time) / (double) (priv->end_time - priv->start_time);
+    }
 
   /* Finish animation early if not mapped anymore */
   if (!gtk_widget_get_mapped (widget))
@@ -1003,9 +1016,10 @@ gtk_stack_start_transition (GtkStack               *stack,
       priv->last_visible_child != NULL)
     {
       priv->transition_pos = 0.0;
-      priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
-      priv->end_time = priv->start_time + (transition_duration * 1000);
+      priv->start_time = 0;
+      priv->end_time = transition_duration * 1000;
       priv->active_transition_type = effective_transition_type (stack, transition_type);
+      priv->first_frame_skipped = FALSE;
       gtk_stack_schedule_ticks (stack);
     }
   else

@@ -266,6 +266,7 @@ struct _GtkContainerPrivate
   guint reallocate_redraws : 1;
   guint restyle_pending    : 1;
   guint resize_mode        : 2;
+  guint resize_mode_set    : 1;
   guint request_mode       : 2;
 };
 
@@ -1897,6 +1898,28 @@ gtk_container_remove (GtkContainer *container,
   g_object_unref (container);
 }
 
+static void
+gtk_container_real_set_resize_mode (GtkContainer  *container,
+                                    GtkResizeMode  resize_mode)
+{
+  GtkWidget *widget = GTK_WIDGET (container);
+  GtkContainerPrivate *priv = container->priv;
+
+  if (_gtk_widget_is_toplevel (widget) &&
+      resize_mode == GTK_RESIZE_PARENT)
+    {
+      resize_mode = GTK_RESIZE_QUEUE;
+    }
+
+  if (priv->resize_mode != resize_mode)
+    {
+      priv->resize_mode = resize_mode;
+
+      gtk_widget_queue_resize (widget);
+      g_object_notify_by_pspec (G_OBJECT (container), container_props[PROP_RESIZE_MODE]);
+    }
+}
+
 /**
  * gtk_container_set_resize_mode:
  * @container: a #GtkContainer
@@ -1917,26 +1940,26 @@ gtk_container_set_resize_mode (GtkContainer  *container,
                                GtkResizeMode  resize_mode)
 {
   GtkContainerPrivate *priv;
-  GtkWidget *widget = (GtkWidget *)container;
 
   g_return_if_fail (GTK_IS_CONTAINER (container));
   g_return_if_fail (resize_mode <= GTK_RESIZE_IMMEDIATE);
 
   priv = container->priv;
+  priv->resize_mode_set = TRUE;
 
-  if (_gtk_widget_is_toplevel (widget) &&
-      resize_mode == GTK_RESIZE_PARENT)
-    {
-      resize_mode = GTK_RESIZE_QUEUE;
-    }
+  gtk_container_real_set_resize_mode (container, resize_mode);
+}
 
-  if (priv->resize_mode != resize_mode)
-    {
-      priv->resize_mode = resize_mode;
+void
+gtk_container_set_default_resize_mode (GtkContainer *container,
+                                       GtkResizeMode resize_mode)
+{
+  GtkContainerPrivate *priv = container->priv;
 
-      gtk_widget_queue_resize (widget);
-      g_object_notify_by_pspec (G_OBJECT (container), container_props[PROP_RESIZE_MODE]);
-    }
+  if (priv->resize_mode_set)
+    return;
+
+  gtk_container_real_set_resize_mode (container, resize_mode);
 }
 
 /**
@@ -1981,6 +2004,23 @@ gtk_container_set_reallocate_redraws (GtkContainer *container,
   container->priv->reallocate_redraws = needs_redraws ? TRUE : FALSE;
 }
 
+static gboolean
+gtk_container_needs_idle_sizer (GtkContainer *container)
+{
+  GtkContainerPrivate *priv = container->priv;
+
+  if (priv->resize_mode == GTK_RESIZE_PARENT)
+    return FALSE;
+
+  if (container->priv->restyle_pending)
+    return TRUE;
+
+  if (priv->resize_mode == GTK_RESIZE_IMMEDIATE)
+    return FALSE;
+
+  return gtk_widget_needs_allocate (GTK_WIDGET (container));
+}
+
 static void
 gtk_container_idle_sizer (GdkFrameClock *clock,
 			  GtkContainer  *container)
@@ -2012,7 +2052,7 @@ gtk_container_idle_sizer (GdkFrameClock *clock,
       gtk_container_check_resize (container);
     }
 
-  if (!container->priv->restyle_pending && !gtk_widget_needs_allocate (GTK_WIDGET (container)))
+  if (!gtk_container_needs_idle_sizer (container))
     {
       _gtk_container_stop_idle_sizer (container);
     }
@@ -2107,10 +2147,7 @@ _gtk_container_queue_restyle (GtkContainer *container)
 void
 _gtk_container_maybe_start_idle_sizer (GtkContainer *container)
 {
-  if (!GTK_IS_RESIZE_CONTAINER (container))
-    return;
-
-  if (container->priv->restyle_pending || gtk_widget_needs_allocate (GTK_WIDGET (container)))
+  if (gtk_container_needs_idle_sizer (container))
     gtk_container_start_idle_sizer (container);
 }
 

@@ -311,6 +311,7 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  gdk_property_state_get_type@Base 3.0.0
  gdk_query_depths@Base 3.0.0
  gdk_query_visual_types@Base 3.0.0
+ gdk_rectangle_equal@Base 3.18.6
  gdk_rectangle_get_type@Base 3.0.0
  gdk_rectangle_intersect@Base 3.0.0
  gdk_rectangle_union@Base 3.0.0

@@ -426,9 +426,6 @@ testdata = \
 	textview-border-windows.css \
 	textview-border-windows.ref.ui \
 	textview-border-windows.ui \
-	textview-margins.css \
-	textview-margins.ref.ui \
-	textview-margins.ui \
 	textview-tags.ref.ui \
 	textview-tags.ui \
 	toplevel-vs-popup.ref.ui \

@@ -355,8 +355,10 @@ main (int    argc,
   g_test_add_func ("/TreeView/cursor/bug-539377", test_bug_539377);
   g_test_add_func ("/TreeView/cursor/select-collapsed_row",
                    test_select_collapsed_row);
+  /* See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=711107
+   * and https://bugzilla.gnome.org/show_bug.cgi?id=702371
   g_test_add_func ("/TreeView/sizing/row-separator-height",
-                   test_row_separator_height);
+                   test_row_separator_height);*/
   g_test_add_func ("/TreeView/selection/count", test_selection_count);
   g_test_add_func ("/TreeView/selection/empty", test_selection_empty);
 

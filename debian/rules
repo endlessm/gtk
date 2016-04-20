@@ -87,7 +87,11 @@ DEB_CONFIGURE_FLAGS_shared += --disable-colord
 endif
 
 ifeq (linux,$(DEB_HOST_ARCH_OS))
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armhf))
+DEB_CONFIGURE_FLAGS_shared += --disable-wayland-backend
+else
 DEB_CONFIGURE_FLAGS_shared += --enable-wayland-backend
+endif
 else
 DEB_CONFIGURE_FLAGS_shared += --disable-wayland-backend
 endif

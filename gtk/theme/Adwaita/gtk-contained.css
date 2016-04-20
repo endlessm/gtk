@@ -4645,27 +4645,6 @@ read if you used those and something break with a version upgrade you're on your
 @define-color wm_button_active_color_b shade(#e8e8e7, 0.89);
 @define-color wm_button_active_color_c shade(#e8e8e7, 0.9);
 @define-color content_view_bg #ffffff;
-/* Endless window top bar */
-.top-bar {
-  background-image: linear-gradient(to bottom, #3c3c3c, #292929);
-  /* Endless top bar icons */ }
-  .top-bar .button {
-    color: #8a8a8a;
-    padding: 0px;
-    background-image: none;
-    border-width: 0px;
-    border-radius: 2px;
-    border-image: none; }
-    .top-bar .button:hover {
-      color: #ffffff;
-      background-image: linear-gradient(to bottom, #444444, #6c6c6c 95%, #838383 98%); }
-    .top-bar .button:active {
-      color: #8a8a8a;
-      background-image: linear-gradient(to bottom, #434343, #474747 95%, #4f4f4f 98%); }
-    .top-bar .button:backdrop {
-      background-image: none;
-      background-color: transparent; }
-
 .header-bar.default-decoration {
   color: #dfdbd2;
   background-image: linear-gradient(to bottom, #464646, #1e1e1e);

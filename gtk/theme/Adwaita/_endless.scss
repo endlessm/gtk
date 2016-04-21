@@ -7,13 +7,14 @@ headerbar.default-decoration {
               inset 0 -2px #292929,
               inset 0 1px  #4d4d4d;
   border: none;
+  min-height: 36px;
 
   &:dir(rtl) {
-    padding: 6px 16px 6px 6px;
+    padding: 0 16px 0 6px;
   }
 
   &:dir(ltr) {
-    padding: 6px 6px 6px 16px;
+    padding: 0 6px 0 16px;
   }
 
   &.maximized {

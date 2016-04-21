@@ -37,26 +37,27 @@ headerbar.default-decoration {
   }
 
   button.titlebutton {
-      color: #8a8a8a;
+      color: #8c8c8c;
       background-image: none;
       border: none;
       border-image: none;
       box-shadow: none;
       background-color: transparent;
+      border-radius: 2px;
 
       &:hover {
-        border: 1px solid #333333;
-        color: #ffffff;
+        color: #dcdcdc;
         background-image: linear-gradient(to bottom,
-                                          #5f5f5f,
-                                          #333333);
+                                          rgb(131, 131, 131) 2%,
+                                          rgb(108, 108, 108) 5%,
+                                          rgb(68, 68, 68))
       }
       &:active {
-        border: 1px solid #333333;
         color: #787878;
         background-image: linear-gradient(to bottom,
-                                          #4a4a4a,
-                                          #3c3c3c);
+                                          rgb(79, 79, 79) 2%,
+                                          rgb(71, 71, 71) 5%,
+                                          rgb(67, 67, 67))
       }
       &:backdrop {
         background-image: none;

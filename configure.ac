@@ -81,7 +81,7 @@ AC_SUBST(INTROSPECTION_REQUIRED_VERSION)
 # Save this value here, since automake will set cflags later
 cflags_set=${CFLAGS+set}
 
-AM_INIT_AUTOMAKE([1.11 -Wall no-define -Wno-portability tar-ustar no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.11.2 -Wall no-define -Wno-portability tar-ustar no-dist-gzip dist-xz])
 AM_MAINTAINER_MODE([enable])
 
 # Support silent build rules. Disable
@@ -1926,9 +1926,6 @@ build/win32/vs9/Makefile
 build/win32/vs9/gtk3-version-paths.vsprops
 build/win32/vs10/Makefile
 build/win32/vs10/gtk3-version-paths.props
-build/win32/vs11/Makefile
-build/win32/vs12/Makefile
-build/win32/vs14/Makefile
 gdk/Makefile
 gdk/broadway/Makefile
 gdk/x11/Makefile

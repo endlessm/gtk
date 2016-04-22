@@ -183,9 +183,6 @@ testdata = \
 	box-shadow-spread.css \
 	box-shadow-spread.ref.ui \
 	box-shadow-spread.ui \
-	box-shadow-changes-modify-clip.css \
-	box-shadow-changes-modify-clip.ref.ui \
-	box-shadow-changes-modify-clip.ui \
 	button-wrapping.ui \
 	button-wrapping.ref.ui \
 	cellrenderer-pixbuf-stock-rtl.css \
@@ -194,6 +191,9 @@ testdata = \
 	color-transition.css \
 	color-transition.ref.ui \
 	color-transition.ui \
+	css-em-label-size.css \
+	css-em-label-size.ui \
+	css-em-label-size.ref.ui \
 	css-currentcolor-alpha.css \
 	css-currentcolor-alpha.ui \
 	css-currentcolor-alpha.ref.ui \
@@ -309,17 +309,11 @@ testdata = \
 	label-shadows.css \
 	label-shadows.ref.ui \
 	label-shadows.ui \
-	label-sizing.css \
-	label-sizing.ref.ui \
-	label-sizing.ui \
 	label-small-ellipsized.ref.ui \
 	label-small-ellipsized.ui \
 	label-text-shadow-clipping.css \
 	label-text-shadow-clipping.ref.ui \
 	label-text-shadow-clipping.ui \
-	label-text-shadow-changes-modify-clip.css \
-	label-text-shadow-changes-modify-clip.ref.ui \
-	label-text-shadow-changes-modify-clip.ui \
 	label-width-chars-dont-shrink.ref.ui \
 	label-width-chars-dont-shrink.ui \
 	label-wrap-justify.ref.ui \
@@ -426,9 +420,6 @@ testdata = \
 	textview-border-windows.css \
 	textview-border-windows.ref.ui \
 	textview-border-windows.ui \
-	textview-margins.css \
-	textview-margins.ref.ui \
-	textview-margins.ui \
 	textview-tags.ref.ui \
 	textview-tags.ui \
 	toplevel-vs-popup.ref.ui \

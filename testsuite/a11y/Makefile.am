@@ -28,7 +28,7 @@ TESTS_ENVIRONMENT = 			\
 	GTK_CSD=1			\
 	G_ENABLE_DIAGNOSTIC=0
 
-TEST_PROGS += accessibility-dump
+#TEST_PROGS += accessibility-dump
 
 TEST_PROGS += tree-performance
 

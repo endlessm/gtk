@@ -22,9 +22,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <linux/memfd.h>
 #include <sys/mman.h>
-#include <sys/syscall.h>
 
 #include <glib.h>
 #include "gdkwayland.h"
@@ -957,24 +955,27 @@ create_shm_pool (struct wl_shm  *shm,
                  size_t         *buf_length,
                  void          **data_out)
 {
+  char *filename;
   struct wl_shm_pool *pool;
-  int ret, fd;
+  int fd;
   void *data;
 
-  ret = syscall (SYS_memfd_create, "gdk-wayland", MFD_CLOEXEC);
-
-  if (ret < 0)
+  filename = g_strconcat (g_get_tmp_dir (), G_DIR_SEPARATOR_S, "wayland-shm-XXXXXX", NULL);
+  fd = mkstemp (filename);
+  if (fd < 0)
     {
-      g_critical (G_STRLOC ": creating shared memory file failed: %s",
-                  g_strerror (-ret));
+      g_critical (G_STRLOC ": Unable to create temporary file (%s): %s",
+                  filename, g_strerror (errno));
+      g_free (filename);
       return NULL;
     }
-
-  fd = ret;
+  unlink (filename);
 
   if (ftruncate (fd, size) < 0)
     {
-      g_critical (G_STRLOC ": Truncating shared memory file failed: %m");
+      g_critical (G_STRLOC ": Truncating temporary file (%s) failed: %s",
+                  filename, g_strerror (errno));
+      g_free (filename);
       close (fd);
       return NULL;
     }
@@ -983,7 +984,9 @@ create_shm_pool (struct wl_shm  *shm,
 
   if (data == MAP_FAILED)
     {
-      g_critical (G_STRLOC ": mmap'ping shared memory file failed: %m");
+      g_critical (G_STRLOC ": mmap'ping temporary file (%s) failed: %s",
+                  filename, g_strerror (errno));
+      g_free (filename);
       close (fd);
       return NULL;
     }
@@ -991,6 +994,7 @@ create_shm_pool (struct wl_shm  *shm,
   pool = wl_shm_create_pool (shm, fd, size);
 
   close (fd);
+  g_free (filename);
 
   *data_out = data;
   *buf_length = size;

@@ -1370,6 +1370,15 @@ load_themes (GtkIconTheme *icon_theme)
   if (priv->current_theme)
     insert_theme (icon_theme, priv->current_theme);
 
+  /* Make sure to always look in EndlessOS theme in case GTK+ can't find
+   * the actual theme currently selected via GSettings, which can happen
+   * for instance when in a ENOSPC situation (i.e. XSettings's property
+   * 'Net/IconThemeName' would not be set to the value set in the GSettings
+   * schema for org.gnome.desktop.interface.icon-theme from the xsettings
+   * plugin in gnome-settings-manager, due to broken connectino via dconf).
+   */
+  insert_theme (icon_theme, "EndlessOS");
+
   /* Always look in the Adwaita, gnome and hicolor icon themes.
    * Looking in hicolor is mandated by the spec, looking in Adwaita
    * and gnome is a pragmatic solution to prevent missing icons in

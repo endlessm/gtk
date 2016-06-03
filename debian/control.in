@@ -51,7 +51,7 @@ Build-Depends: debhelper (>= 9.20141010),
                gobject-introspection (>= 1.41.3),
                libgirepository1.0-dev (>= 1.39.0),
                libxml2-utils,
-               xvfb <!nocheck>
+               xvfb
 Build-Depends-Indep: docbook-xml,
                      docbook-utils,
                      libglib2.0-doc,

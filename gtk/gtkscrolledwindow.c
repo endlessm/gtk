@@ -4454,7 +4454,7 @@ gtk_scrolled_window_set_min_content_width (GtkScrolledWindow *scrolled_window,
 
   priv = scrolled_window->priv;
 
-  g_return_if_fail (priv->max_content_width == -1 || width <= priv->max_content_width);
+  g_return_if_fail (width == -1 || priv->max_content_width == -1 || width <= priv->max_content_width);
 
   if (priv->min_content_width != width)
     {
@@ -4508,7 +4508,7 @@ gtk_scrolled_window_set_min_content_height (GtkScrolledWindow *scrolled_window,
 
   priv = scrolled_window->priv;
 
-  g_return_if_fail (priv->max_content_height == -1 || height <= priv->max_content_height);
+  g_return_if_fail (height == -1 || priv->max_content_height == -1 || height <= priv->max_content_height);
 
   if (priv->min_content_height != height)
     {
@@ -4592,7 +4592,7 @@ gtk_scrolled_window_set_max_content_width (GtkScrolledWindow *scrolled_window,
 
   priv = scrolled_window->priv;
 
-  g_return_if_fail (priv->min_content_width == -1 || width >= priv->min_content_width);
+  g_return_if_fail (width == -1 || priv->min_content_width == -1 || width >= priv->min_content_width);
 
   if (width != priv->max_content_width)
     {
@@ -4644,7 +4644,7 @@ gtk_scrolled_window_set_max_content_height (GtkScrolledWindow *scrolled_window,
 
   priv = scrolled_window->priv;
 
-  g_return_if_fail (priv->min_content_height == -1 || height >= priv->min_content_height);
+  g_return_if_fail (height == -1 || priv->min_content_height == -1 || height >= priv->min_content_height);
 
   if (height != priv->max_content_height)
     {

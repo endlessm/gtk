@@ -91,6 +91,8 @@ gboolean        _gtk_propagate_captured_event  (GtkWidget       *widget,
                                                 GdkEvent        *event,
                                                 GtkWidget       *topmost);
 
+gboolean gtk_should_use_portal (void);
+
 #ifdef G_OS_WIN32
 void _gtk_load_dll_with_libgtk3_manifest (const char *dllname);
 #endif

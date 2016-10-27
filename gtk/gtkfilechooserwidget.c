@@ -71,6 +71,7 @@
 #include "gtkshow.h"
 #include "gtkmain.h"
 #include "gtkscrollable.h"
+#include "gtkscrolledwindow.h"
 #include "gtkpopover.h"
 #include "gtkrevealer.h"
 #include "gtkspinner.h"
@@ -277,6 +278,7 @@ struct _GtkFileChooserWidgetPrivate {
   guint load_recent_id;
 
   GtkWidget *extra_and_filters;
+  GtkWidget *extra_and_filters_scroll;
   GtkWidget *filter_combo_hbox;
   GtkWidget *filter_combo;
   GtkWidget *preview_box;
@@ -4074,6 +4076,23 @@ show_places_button_if_needed (GtkFileChooserWidget *impl)
 
   gtk_widget_set_visible (priv->browse_places_button, TRUE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (priv->browse_places_button), FALSE);
+}
+
+static void
+extra_and_filters_size_allocate_cb (GtkFileChooserWidget *impl)
+{
+  GdkScreen *screen;
+  GtkFileChooserWidgetPrivate *priv = impl->priv;
+
+  screen = gtk_widget_get_screen (GTK_WIDGET (impl));
+  if (!screen)
+    return;
+  if (gdk_screen_get_width (screen) >= gtk_widget_get_allocated_width (priv->extra_and_filters))
+    return;
+
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (priv->extra_and_filters_scroll),
+                                  GTK_POLICY_ALWAYS,
+                                  GTK_POLICY_NEVER);
 }
 
 /* GtkWidget::map method */
@@ -8528,6 +8547,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, preview_box);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, extra_align);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, extra_and_filters);
+  gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, extra_and_filters_scroll);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, location_entry_box);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, search_entry);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, search_spinner);
@@ -8578,6 +8598,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_callback (widget_class, rename_file_name_changed);
   gtk_widget_class_bind_template_callback (widget_class, rename_file_rename_clicked);
   gtk_widget_class_bind_template_callback (widget_class, rename_file_end);
+  gtk_widget_class_bind_template_callback (widget_class, extra_and_filters_size_allocate_cb);
 
   gtk_widget_class_set_css_name (widget_class, "filechooser");
 }

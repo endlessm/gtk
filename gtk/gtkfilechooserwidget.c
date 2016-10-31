@@ -6173,6 +6173,31 @@ find_good_size_from_style (GtkWidget *widget,
 }
 
 static void
+_gtk_file_chooser_get_monitor_workarea_for_widget (GtkWidget *widget,
+                                                   gint      *width,
+                                                   gint      *height)
+{
+  gint monitor_num;
+  GdkScreen *screen;
+  GdkWindow *window;
+  GdkRectangle monitor;
+
+  screen = gtk_widget_get_screen (widget);
+  window = gtk_widget_get_window (widget);
+  if (!screen || !window)
+    {
+      *width = 1920;
+      *height = 1080;
+      return;
+    }
+
+  monitor_num = gdk_screen_get_monitor_at_window (screen, window);
+  gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
+  *width = monitor.width;
+  *height = monitor.height;
+}
+
+static void
 gtk_file_chooser_widget_get_default_size (GtkFileChooserEmbed *chooser_embed,
                                           gint                *default_width,
                                           gint                *default_height)
@@ -6180,15 +6205,20 @@ gtk_file_chooser_widget_get_default_size (GtkFileChooserEmbed *chooser_embed,
   GtkFileChooserWidget *impl = GTK_FILE_CHOOSER_WIDGET (chooser_embed);
   GtkFileChooserWidgetPrivate *priv = impl->priv;
   GtkRequisition req;
-  int x, y, width, height;
+  int x, y, width, height, max_width, max_height;
   GSettings *settings;
+
+  _gtk_file_chooser_get_monitor_workarea_for_widget (GTK_WIDGET (impl), &max_width, &max_height);
+  max_width = max_width * 7 / 8;
+  max_height = max_height * 7 / 8;
 
   settings = _gtk_file_chooser_get_settings_for_widget (GTK_WIDGET (impl));
 
   g_settings_get (settings, SETTINGS_KEY_WINDOW_POSITION, "(ii)", &x, &y);
   g_settings_get (settings, SETTINGS_KEY_WINDOW_SIZE, "(ii)", &width, &height);
 
-  if (x >= 0 && y >= 0 && width > 0 && height > 0)
+  if (x >= 0 && y >= 0 && width > 0 && height > 0 &&
+      width <= max_width && height <= max_height)
     {
       *default_width = width;
       *default_height = height;
@@ -6213,6 +6243,10 @@ gtk_file_chooser_widget_get_default_size (GtkFileChooserEmbed *chooser_embed,
                                      &req, NULL);
       *default_height += gtk_box_get_spacing (GTK_BOX (chooser_embed)) + req.height;
     }
+
+  /* Make sure it will fit in the screen */
+  *default_width = MIN (*default_width, max_width);
+  *default_height = MIN (*default_height, max_height);
 }
 
 struct switch_folder_closure {

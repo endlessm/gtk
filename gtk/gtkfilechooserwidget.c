@@ -61,6 +61,7 @@
 #include "gtksizegroup.h"
 #include "gtksizerequest.h"
 #include "gtkstack.h"
+#include "gtktogglebutton.h"
 #include "gtktooltip.h"
 #include "gtktreednd.h"
 #include "gtktreeprivate.h"
@@ -242,6 +243,7 @@ struct _GtkFileChooserWidgetPrivate {
   GtkWidget *browse_new_folder_button;
   GtkSizeGroup *browse_path_bar_size_group;
   GtkWidget *browse_path_bar;
+  GtkWidget *browse_places_button;
   GtkWidget *new_folder_name_entry;
   GtkWidget *new_folder_create_button;
   GtkWidget *new_folder_error_label;
@@ -258,6 +260,7 @@ struct _GtkFileChooserWidgetPrivate {
   char *browse_files_last_selected_name;
 
   GtkWidget *places_sidebar;
+  GtkWidget *places_sidebar_box;
   GtkWidget *places_view;
   StartupMode startup_mode;
 
@@ -4065,6 +4068,37 @@ add_cwd_to_sidebar_if_needed (GtkFileChooserWidget *impl)
   g_object_unref (cwd_file);
 }
 
+static void
+browse_places_button_changed_cb (GtkFileChooserWidget *impl)
+{
+  gboolean active;
+  GtkFileChooserWidgetPrivate *priv = impl->priv;
+
+  active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (priv->browse_places_button));
+  /* FIXME: using a GtkBox to hide the GtkPlacesSidebar because it uses show_all on itself */
+  gtk_widget_set_visible (priv->places_sidebar_box, active);
+}
+
+static void
+show_places_button_if_needed (GtkFileChooserWidget *impl)
+{
+  gint sidebar_width;
+  GdkScreen *screen;
+  GtkFileChooserWidgetPrivate *priv = impl->priv;
+
+  screen = gtk_widget_get_screen (GTK_WIDGET (impl));
+  if (!screen)
+    return;
+
+  /* If the sidebar width takes more than 25% of the screen width, hide it */
+  sidebar_width = gtk_widget_get_allocated_width (priv->places_sidebar);
+  if (gdk_screen_get_width (screen) > sidebar_width * 4)
+    return;
+
+  gtk_widget_set_visible (priv->browse_places_button, TRUE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (priv->browse_places_button), FALSE);
+}
+
 /* GtkWidget::map method */
 static void
 gtk_file_chooser_widget_map (GtkWidget *widget)
@@ -4079,6 +4113,7 @@ gtk_file_chooser_widget_map (GtkWidget *widget)
   settings_load (impl);
 
   add_cwd_to_sidebar_if_needed (impl);
+  show_places_button_if_needed (impl);
 
   if (priv->operation_mode == OPERATION_MODE_BROWSE)
     {
@@ -8519,6 +8554,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_widgets_hpaned);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_files_stack);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, places_sidebar);
+  gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, places_sidebar_box);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, places_view);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_files_tree_view);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_files_swin);
@@ -8527,6 +8563,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_new_folder_button);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_path_bar_size_group);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_path_bar);
+  gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_places_button);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, filter_combo_hbox);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, filter_combo);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, preview_box);
@@ -8557,6 +8594,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
 
   /* And a *lot* of callbacks to bind ... */
   gtk_widget_class_bind_template_callback (widget_class, browse_files_key_press_event_cb);
+  gtk_widget_class_bind_template_callback (widget_class, browse_places_button_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, file_list_drag_drop_cb);
   gtk_widget_class_bind_template_callback (widget_class, file_list_drag_data_received_cb);
   gtk_widget_class_bind_template_callback (widget_class, list_popup_menu_cb);

@@ -12,17 +12,22 @@
           <object class="GtkPaned" id="browse_widgets_hpaned">
             <property name="visible">1</property>
             <child>
-              <object class="GtkPlacesSidebar" id="places_sidebar">
+              <object class="GtkBox" id="places_sidebar_box">
                 <property name="visible">1</property>
-                <property name="hscrollbar-policy">never</property>
-                <property name="local-only">1</property>
-                <property name="show-other-locations">1</property>
-                <style>
-                  <class name="sidebar"/>
-                </style>
-                <signal name="open-location" handler="places_sidebar_open_location_cb" swapped="no"/>
-                <signal name="show-error-message" handler="places_sidebar_show_error_message_cb" swapped="no"/>
-                <signal name="show-other-locations-with-flags" handler="places_sidebar_show_other_locations_with_flags_cb" swapped="no"/>
+                <child>
+                  <object class="GtkPlacesSidebar" id="places_sidebar">
+                    <property name="visible">1</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="local-only">1</property>
+                    <property name="show-other-locations">1</property>
+                    <style>
+                      <class name="sidebar"/>
+                    </style>
+                    <signal name="open-location" handler="places_sidebar_open_location_cb" swapped="no"/>
+                    <signal name="show-error-message" handler="places_sidebar_show_error_message_cb" swapped="no"/>
+                    <signal name="show-other-locations-with-flags" handler="places_sidebar_show_other_locations_with_flags_cb" swapped="no"/>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="resize">0</property>
@@ -34,110 +39,141 @@
                 <property name="visible">1</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkRevealer" id="browse_header_revealer">
+                  <object class="GtkBox">
                     <property name="visible">1</property>
-                    <property name="hexpand">1</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="name">pathbarbox</property>
+                    <style>
+                      <class name="view"/>
+                    </style>
                     <child>
-                      <object class="GtkBox">
-                        <property name="visible">1</property>
-                        <property name="name">pathbarbox</property>
-                        <property name="orientation">vertical</property>
-                        <property name="spacing">12</property>
-                        <style>
-                          <class name="view"/>
-                        </style>
+                      <object class="GtkMenuButton" id="browse_places_button">
+                        <property name="tooltip-text" translatable="yes">Show other locations</property>
+                        <property name="use-underline">1</property>
+                        <property name="valign">center</property>
+                        <property name="halign">center</property>
+                        <property name="border_width">6</property>
+                        <property name="sensitive">1</property>
+                        <property name="active">1</property>
                         <child>
-                          <object class="GtkStack" id="browse_header_stack">
+                          <object class="GtkImage">
                             <property name="visible">1</property>
-                            <property name="transition-type">crossfade</property>
+                            <property name="icon-name">folder-symbolic</property>
+                            <property name="icon-size">1</property>
+                          </object>
+                        </child>
+                        <signal name="toggled" handler="browse_places_button_changed_cb" swapped="yes"/>
+                      </object>
+                      <packing>
+                        <property name="fill">0</property>
+                        <property name="pack-type">start</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRevealer" id="browse_header_revealer">
+                        <property name="visible">1</property>
+                        <property name="hexpand">1</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">1</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">12</property>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkStack" id="browse_header_stack">
                                 <property name="visible">1</property>
-                                <property name="spacing">6</property>
-                                <property name="border-width">6</property>
+                                <property name="transition-type">crossfade</property>
                                 <child>
-                                  <object class="GtkPathBar" id="browse_path_bar">
-                                    <property name="visible">True</property>
-                                    <signal name="path-clicked" handler="path_bar_clicked" after="yes" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkMenuButton" id="browse_new_folder_button">
-                                    <property name="tooltip-text" translatable="yes">Create Folder</property>
-                                    <property name="use-underline">1</property>
-                                    <property name="popover">new_folder_popover</property>
-                                    <signal name="notify::active" handler="new_folder_popover_active"/>
+                                  <object class="GtkBox">
+                                    <property name="visible">1</property>
+                                    <property name="spacing">6</property>
+                                    <property name="border-width">6</property>
                                     <child>
-                                      <object class="GtkImage">
-                                        <property name="visible">1</property>
-                                        <property name="icon-name">folder-new-symbolic</property>
-                                        <property name="icon-size">1</property>
+                                      <object class="GtkPathBar" id="browse_path_bar">
+                                        <property name="visible">True</property>
+                                        <signal name="path-clicked" handler="path_bar_clicked" after="yes" swapped="no"/>
                                       </object>
+                                      <packing>
+                                        <property name="expand">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkMenuButton" id="browse_new_folder_button">
+                                        <property name="tooltip-text" translatable="yes">Create Folder</property>
+                                        <property name="use-underline">1</property>
+                                        <property name="popover">new_folder_popover</property>
+                                        <signal name="notify::active" handler="new_folder_popover_active"/>
+                                        <child>
+                                          <object class="GtkImage">
+                                            <property name="visible">1</property>
+                                            <property name="icon-name">folder-new-symbolic</property>
+                                            <property name="icon-size">1</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="fill">0</property>
+                                        <property name="pack-type">end</property>
+                                        <property name="position">1</property>
+                                      </packing>
                                     </child>
                                   </object>
                                   <packing>
-                                    <property name="fill">0</property>
-                                    <property name="pack-type">end</property>
-                                    <property name="position">1</property>
+                                    <property name="name">pathbar</property>
                                   </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="name">pathbar</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox" id="location_entry_box">
-                                <property name="visible">1</property>
-                                <property name="no-show-all">1</property>
-                                <property name="spacing">6</property>
-                                <property name="border-width">6</property>
-                              </object>
-                              <packing>
-                                <property name="name">location</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox" id="search_entry_box">
-                                <property name="visible">1</property>
-                                <property name="no-show-all">1</property>
-                                <property name="spacing">6</property>
-                                <property name="border-width">6</property>
-                                <child type="center">
-                                  <object class="GtkSearchEntry" id="search_entry">
-                                    <property name="visible">1</property>
-                                    <property name="width-chars">45</property>
-                                    <signal name="search-changed" handler="search_entry_activate_cb" swapped="yes"/>
-                                    <signal name="stop-search" handler="search_entry_stop_cb" swapped="yes"/>
-                                  </object>
                                 </child>
                                 <child>
-                                  <object class="GtkSpinner" id="search_spinner">
-                                    <property name="active">1</property>
+                                  <object class="GtkBox" id="location_entry_box">
+                                    <property name="visible">1</property>
+                                    <property name="no-show-all">1</property>
+                                    <property name="spacing">6</property>
+                                    <property name="border-width">6</property>
                                   </object>
                                   <packing>
-                                    <property name="pack-type">end</property>
+                                    <property name="name">location</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox" id="search_entry_box">
+                                    <property name="visible">1</property>
+                                    <property name="no-show-all">1</property>
+                                    <property name="spacing">6</property>
+                                    <property name="border-width">6</property>
+                                    <child type="center">
+                                      <object class="GtkSearchEntry" id="search_entry">
+                                        <property name="visible">1</property>
+                                        <property name="width-chars">45</property>
+                                        <signal name="search-changed" handler="search_entry_activate_cb" swapped="yes"/>
+                                        <signal name="stop-search" handler="search_entry_stop_cb" swapped="yes"/>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSpinner" id="search_spinner">
+                                        <property name="active">1</property>
+                                      </object>
+                                      <packing>
+                                        <property name="pack-type">end</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="name">search</property>
                                   </packing>
                                 </child>
                               </object>
                               <packing>
-                                <property name="name">search</property>
+                                <property name="fill">0</property>
                               </packing>
                             </child>
                           </object>
-                          <packing>
-                            <property name="fill">0</property>
-                          </packing>
                         </child>
                       </object>
+                      <packing>
+                        <property name="fill">1</property>
+                        <property name="expand">1</property>
+                      </packing>
                     </child>
                   </object>
-                  <packing>
-                    <property name="fill">0</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="list_and_preview_box">
@@ -359,7 +395,8 @@
                 </child>
               </object>
               <packing>
-                <property name="shrink">0</property>
+                <property name="shrink">1</property>
+                <property name="resize">1</property>
               </packing>
             </child>
           </object>

@@ -60,6 +60,7 @@
 #include "gtksizegroup.h"
 #include "gtksizerequest.h"
 #include "gtkstack.h"
+#include "gtktogglebutton.h"
 #include "gtktooltip.h"
 #include "gtktreednd.h"
 #include "gtktreeprivate.h"
@@ -70,6 +71,7 @@
 #include "gtkshow.h"
 #include "gtkmain.h"
 #include "gtkscrollable.h"
+#include "gtkscrolledwindow.h"
 #include "gtkpopover.h"
 #include "gtkrevealer.h"
 #include "gtkspinner.h"
@@ -240,6 +242,7 @@ struct _GtkFileChooserWidgetPrivate {
   GtkWidget *browse_new_folder_button;
   GtkSizeGroup *browse_path_bar_size_group;
   GtkWidget *browse_path_bar;
+  GtkWidget *browse_places_button;
   GtkWidget *new_folder_name_entry;
   GtkWidget *new_folder_create_button;
   GtkWidget *new_folder_error_label;
@@ -256,6 +259,7 @@ struct _GtkFileChooserWidgetPrivate {
   char *browse_files_last_selected_name;
 
   GtkWidget *places_sidebar;
+  GtkWidget *places_sidebar_box;
   GtkWidget *places_view;
   StartupMode startup_mode;
 
@@ -274,6 +278,7 @@ struct _GtkFileChooserWidgetPrivate {
   guint load_recent_id;
 
   GtkWidget *extra_and_filters;
+  GtkWidget *extra_and_filters_scroll;
   GtkWidget *filter_combo_hbox;
   GtkWidget *filter_combo;
   GtkWidget *preview_box;
@@ -2593,7 +2598,7 @@ location_entry_setup (GtkFileChooserWidget *impl)
 
   _gtk_file_chooser_entry_set_local_only (GTK_FILE_CHOOSER_ENTRY (priv->location_entry), priv->local_only);
   _gtk_file_chooser_entry_set_action (GTK_FILE_CHOOSER_ENTRY (priv->location_entry), priv->action);
-  gtk_entry_set_width_chars (GTK_ENTRY (priv->location_entry), 45);
+  gtk_entry_set_width_chars (GTK_ENTRY (priv->location_entry), 30);
   gtk_entry_set_activates_default (GTK_ENTRY (priv->location_entry), TRUE);
 }
 
@@ -4042,6 +4047,54 @@ add_cwd_to_sidebar_if_needed (GtkFileChooserWidget *impl)
   g_object_unref (cwd_file);
 }
 
+static void
+browse_places_button_changed_cb (GtkFileChooserWidget *impl)
+{
+  gboolean active;
+  GtkFileChooserWidgetPrivate *priv = impl->priv;
+
+  active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (priv->browse_places_button));
+  /* FIXME: using a GtkBox to hide the GtkPlacesSidebar because it uses show_all on itself */
+  gtk_widget_set_visible (priv->places_sidebar_box, active);
+}
+
+static void
+show_places_button_if_needed (GtkFileChooserWidget *impl)
+{
+  gint sidebar_width;
+  GdkScreen *screen;
+  GtkFileChooserWidgetPrivate *priv = impl->priv;
+
+  screen = gtk_widget_get_screen (GTK_WIDGET (impl));
+  if (!screen)
+    return;
+
+  /* If the sidebar width takes more than 25% of the screen width, hide it */
+  sidebar_width = gtk_widget_get_allocated_width (priv->places_sidebar);
+  if (gdk_screen_get_width (screen) > sidebar_width * 4)
+    return;
+
+  gtk_widget_set_visible (priv->browse_places_button, TRUE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (priv->browse_places_button), FALSE);
+}
+
+static void
+extra_and_filters_size_allocate_cb (GtkFileChooserWidget *impl)
+{
+  GdkScreen *screen;
+  GtkFileChooserWidgetPrivate *priv = impl->priv;
+
+  screen = gtk_widget_get_screen (GTK_WIDGET (impl));
+  if (!screen)
+    return;
+  if (gdk_screen_get_width (screen) >= gtk_widget_get_allocated_width (priv->extra_and_filters))
+    return;
+
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (priv->extra_and_filters_scroll),
+                                  GTK_POLICY_ALWAYS,
+                                  GTK_POLICY_NEVER);
+}
+
 /* GtkWidget::map method */
 static void
 gtk_file_chooser_widget_map (GtkWidget *widget)
@@ -4056,6 +4109,7 @@ gtk_file_chooser_widget_map (GtkWidget *widget)
   settings_load (impl);
 
   add_cwd_to_sidebar_if_needed (impl);
+  show_places_button_if_needed (impl);
 
   if (priv->operation_mode == OPERATION_MODE_BROWSE)
     {
@@ -6173,6 +6227,31 @@ find_good_size_from_style (GtkWidget *widget,
 }
 
 static void
+_gtk_file_chooser_get_monitor_workarea_for_widget (GtkWidget *widget,
+                                                   gint      *width,
+                                                   gint      *height)
+{
+  gint monitor_num;
+  GdkScreen *screen;
+  GdkWindow *window;
+  GdkRectangle monitor;
+
+  screen = gtk_widget_get_screen (widget);
+  window = gtk_widget_get_window (widget);
+  if (!screen || !window)
+    {
+      *width = 1920;
+      *height = 1080;
+      return;
+    }
+
+  monitor_num = gdk_screen_get_monitor_at_window (screen, window);
+  gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
+  *width = monitor.width;
+  *height = monitor.height;
+}
+
+static void
 gtk_file_chooser_widget_get_default_size (GtkFileChooserEmbed *chooser_embed,
                                           gint                *default_width,
                                           gint                *default_height)
@@ -6180,15 +6259,20 @@ gtk_file_chooser_widget_get_default_size (GtkFileChooserEmbed *chooser_embed,
   GtkFileChooserWidget *impl = GTK_FILE_CHOOSER_WIDGET (chooser_embed);
   GtkFileChooserWidgetPrivate *priv = impl->priv;
   GtkRequisition req;
-  int x, y, width, height;
+  int x, y, width, height, max_width, max_height;
   GSettings *settings;
+
+  _gtk_file_chooser_get_monitor_workarea_for_widget (GTK_WIDGET (impl), &max_width, &max_height);
+  max_width = max_width * 7 / 8;
+  max_height = max_height * 7 / 8;
 
   settings = _gtk_file_chooser_get_settings_for_widget (GTK_WIDGET (impl));
 
   g_settings_get (settings, SETTINGS_KEY_WINDOW_POSITION, "(ii)", &x, &y);
   g_settings_get (settings, SETTINGS_KEY_WINDOW_SIZE, "(ii)", &width, &height);
 
-  if (x >= 0 && y >= 0 && width > 0 && height > 0)
+  if (x >= 0 && y >= 0 && width > 0 && height > 0 &&
+      width <= max_width && height <= max_height)
     {
       *default_width = width;
       *default_height = height;
@@ -6213,6 +6297,10 @@ gtk_file_chooser_widget_get_default_size (GtkFileChooserEmbed *chooser_embed,
                                      &req, NULL);
       *default_height += gtk_box_get_spacing (GTK_BOX (chooser_embed)) + req.height;
     }
+
+  /* Make sure it will fit in the screen */
+  *default_width = MIN (*default_width, max_width);
+  *default_height = MIN (*default_height, max_height);
 }
 
 struct switch_folder_closure {
@@ -8444,6 +8532,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_widgets_hpaned);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_files_stack);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, places_sidebar);
+  gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, places_sidebar_box);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, places_view);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_files_tree_view);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_files_swin);
@@ -8452,11 +8541,13 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_new_folder_button);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_path_bar_size_group);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_path_bar);
+  gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, browse_places_button);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, filter_combo_hbox);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, filter_combo);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, preview_box);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, extra_align);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, extra_and_filters);
+  gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, extra_and_filters_scroll);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, location_entry_box);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, search_entry);
   gtk_widget_class_bind_template_child_private (widget_class, GtkFileChooserWidget, search_spinner);
@@ -8482,6 +8573,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
 
   /* And a *lot* of callbacks to bind ... */
   gtk_widget_class_bind_template_callback (widget_class, browse_files_key_press_event_cb);
+  gtk_widget_class_bind_template_callback (widget_class, browse_places_button_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, file_list_drag_drop_cb);
   gtk_widget_class_bind_template_callback (widget_class, file_list_drag_data_received_cb);
   gtk_widget_class_bind_template_callback (widget_class, list_popup_menu_cb);
@@ -8506,6 +8598,7 @@ gtk_file_chooser_widget_class_init (GtkFileChooserWidgetClass *class)
   gtk_widget_class_bind_template_callback (widget_class, rename_file_name_changed);
   gtk_widget_class_bind_template_callback (widget_class, rename_file_rename_clicked);
   gtk_widget_class_bind_template_callback (widget_class, rename_file_end);
+  gtk_widget_class_bind_template_callback (widget_class, extra_and_filters_size_allocate_cb);
 
   gtk_widget_class_set_css_name (widget_class, "filechooser");
 }

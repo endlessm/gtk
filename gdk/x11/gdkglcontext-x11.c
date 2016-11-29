@@ -847,6 +847,9 @@ gdk_x11_screen_init_gl (GdkScreen *screen)
   Display *dpy;
   int error_base, event_base;
   int screen_num;
+  GModule *module;
+  typedef Bool (* FP_GLX_Query_Version) (Display *dpy, int *major, int *minor);
+  FP_GLX_Query_Version glx_query_version;
 
   if (display_x11->have_glx)
     return TRUE;
@@ -856,8 +859,26 @@ gdk_x11_screen_init_gl (GdkScreen *screen)
 
   dpy = gdk_x11_display_get_xdisplay (display);
 
-  if (!glXQueryExtension (dpy, &error_base, &event_base))
-    return FALSE;
+  /* We do this without going through libepoxy to avoid the trampoline and
+   * ensure that we don't have side effects that may cause crashes due to
+   * server that lie, or that simply do not support GLX.
+   *
+   * See: https://bugzilla.gnome.org/show_bug.cgi?id=775279
+   */
+  module = g_module_open (NULL, 0);
+  if (!g_module_symbol (module, "glXQueryVersion", (gpointer) &glx_query_version))
+    {
+      g_module_close (module);
+      return FALSE;
+    }
+
+  if (!(* glx_query_version) (dpy, &error_base, &event_base))
+    {
+      g_module_close (module);
+      return FALSE;
+    }
+
+  g_module_close (module);
 
   screen_num = GDK_X11_SCREEN (screen)->screen_num;
 

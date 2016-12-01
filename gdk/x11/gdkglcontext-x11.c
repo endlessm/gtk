@@ -100,7 +100,7 @@ maybe_wait_for_vblank (GdkDisplay  *display,
   GdkX11Display *display_x11 = GDK_X11_DISPLAY (display);
   Display *dpy = gdk_x11_display_get_xdisplay (display);
 
-  if (display_x11->has_glx_sync_control)
+  if (display_x11->has_sync_control)
     {
       gint64 ust, msc, sbc;
 
@@ -109,7 +109,7 @@ maybe_wait_for_vblank (GdkDisplay  *display,
                         0, 2, (msc + 1) % 2,
                         &ust, &msc, &sbc);
     }
-  else if (display_x11->has_glx_video_sync)
+  else if (display_x11->has_video_sync)
     {
       guint32 current_count;
 
@@ -140,7 +140,7 @@ gdk_x11_window_invalidate_for_new_frame (GdkWindow      *window,
 
   context_x11->do_blit_swap = FALSE;
 
-  if (display_x11->has_glx_buffer_age)
+  if (display_x11->has_buffer_age)
     {
       gdk_gl_context_make_current (window->gl_paint_context);
       glXQueryDrawable(dpy, context_x11->drawable,
@@ -248,13 +248,13 @@ gdk_x11_gl_context_end_frame (GdkGLContext *context,
   if (context_x11->do_frame_sync)
     {
       guint32 end_frame_counter = 0;
-      gboolean has_counter = display_x11->has_glx_video_sync;
-      gboolean can_wait = display_x11->has_glx_video_sync || display_x11->has_glx_sync_control;
+      gboolean has_counter = display_x11->has_video_sync;
+      gboolean can_wait = display_x11->has_video_sync || display_x11->has_sync_control;
 
-      if (display_x11->has_glx_video_sync)
+      if (display_x11->has_video_sync)
         glXGetVideoSyncSGI (&end_frame_counter);
 
-      if (context_x11->do_frame_sync && !display_x11->has_glx_swap_interval)
+      if (context_x11->do_frame_sync && !display_x11->has_swap_interval)
         {
           glFinish ();
 
@@ -284,7 +284,7 @@ gdk_x11_gl_context_end_frame (GdkGLContext *context,
   else
     glXSwapBuffers (dpy, drawable);
 
-  if (context_x11->do_frame_sync && info != NULL && display_x11->has_glx_video_sync)
+  if (context_x11->do_frame_sync && info != NULL && display_x11->has_video_sync)
     glXGetVideoSyncSGI (&info->last_frame_counter);
 }
 
@@ -439,7 +439,7 @@ gdk_x11_gl_context_texture_from_surface (GdkGLContext *paint_context,
   GdkX11Display *display_x11;
 
   display_x11 = GDK_X11_DISPLAY (gdk_gl_context_get_display (paint_context));
-  if (!display_x11->has_glx_texture_from_pixmap)
+  if (!display_x11->has_texture_from_pixmap)
     return FALSE;
 
   if (cairo_surface_get_type (surface) != CAIRO_SURFACE_TYPE_XLIB)
@@ -640,12 +640,12 @@ gdk_x11_gl_context_realize (GdkGLContext  *context,
   compat_bit = gdk_gl_context_get_forward_compatible (context);
 
   /* If there is no glXCreateContextAttribsARB() then we default to legacy */
-  legacy_bit = !display_x11->has_glx_create_context ||
+  legacy_bit = !display_x11->has_create_context ||
                (_gdk_gl_flags & GDK_GL_LEGACY) != 0;
 
   es_bit = ((_gdk_gl_flags & GDK_GL_GLES) != 0 ||
             (share != NULL && gdk_gl_context_get_use_es (share))) &&
-           (display_x11->has_glx_create_context && display_x11->has_glx_create_es2_context);
+           (display_x11->has_create_context && display_x11->has_create_es2_context);
 
   /* We cannot share legacy contexts with core profile ones, so the
    * shared context is the one that decides if we're going to create
@@ -672,7 +672,7 @@ gdk_x11_gl_context_realize (GdkGLContext  *context,
    * a compatibility profile; if we don't, then we have to fall back to the
    * old GLX 1.3 API.
    */
-  if (legacy_bit && !GDK_X11_DISPLAY (display)->has_glx_create_context)
+  if (legacy_bit && !GDK_X11_DISPLAY (display)->has_create_context)
     {
       GDK_NOTE (OPENGL, g_message ("Creating legacy GL context on request"));
       context_x11->glx_context = create_legacy_context (display, context_x11->glx_config, share);
@@ -851,7 +851,7 @@ gdk_x11_screen_init_gl (GdkScreen *screen)
   typedef Bool (* FP_GLX_Query_Version) (Display *dpy, int *major, int *minor);
   FP_GLX_Query_Version glx_query_version;
 
-  if (display_x11->have_glx)
+  if (display_x11->supports_gl)
     return TRUE;
 
   if (_gdk_gl_flags & GDK_GL_DISABLE)
@@ -882,29 +882,29 @@ gdk_x11_screen_init_gl (GdkScreen *screen)
 
   screen_num = GDK_X11_SCREEN (screen)->screen_num;
 
-  display_x11->have_glx = TRUE;
+  display_x11->supports_gl = TRUE;
 
   display_x11->glx_version = epoxy_glx_version (dpy, screen_num);
   display_x11->glx_error_base = error_base;
   display_x11->glx_event_base = event_base;
 
-  display_x11->has_glx_create_context =
+  display_x11->has_create_context =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_ARB_create_context_profile");
-  display_x11->has_glx_create_es2_context =
+  display_x11->has_create_es2_context =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_EXT_create_context_es2_profile");
-  display_x11->has_glx_swap_interval =
+  display_x11->has_swap_interval =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_SGI_swap_control");
-  display_x11->has_glx_texture_from_pixmap =
+  display_x11->has_texture_from_pixmap =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_EXT_texture_from_pixmap");
-  display_x11->has_glx_video_sync =
+  display_x11->has_video_sync =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_SGI_video_sync");
-  display_x11->has_glx_buffer_age =
+  display_x11->has_buffer_age =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_EXT_buffer_age");
-  display_x11->has_glx_sync_control =
+  display_x11->has_sync_control =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_OML_sync_control");
-  display_x11->has_glx_multisample =
+  display_x11->has_multisample =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_ARB_multisample");
-  display_x11->has_glx_visual_rating =
+  display_x11->has_visual_rating =
     epoxy_has_glx_extension (dpy, screen_num, "GLX_EXT_visual_rating");
 
   GDK_NOTE (OPENGL,
@@ -921,13 +921,13 @@ gdk_x11_screen_init_gl (GdkScreen *screen)
                      display_x11->glx_version / 10,
                      display_x11->glx_version % 10,
                      glXGetClientString (dpy, GLX_VENDOR),
-                     display_x11->has_glx_create_context ? "yes" : "no",
-                     display_x11->has_glx_create_es2_context ? "yes" : "no",
-                     display_x11->has_glx_swap_interval ? "yes" : "no",
-                     display_x11->has_glx_texture_from_pixmap ? "yes" : "no",
-                     display_x11->has_glx_video_sync ? "yes" : "no",
-                     display_x11->has_glx_buffer_age ? "yes" : "no",
-                     display_x11->has_glx_sync_control ? "yes" : "no"));
+                     display_x11->has_create_context ? "yes" : "no",
+                     display_x11->has_create_es2_context ? "yes" : "no",
+                     display_x11->has_swap_interval ? "yes" : "no",
+                     display_x11->has_texture_from_pixmap ? "yes" : "no",
+                     display_x11->has_video_sync ? "yes" : "no",
+                     display_x11->has_buffer_age ? "yes" : "no",
+                     display_x11->has_sync_control ? "yes" : "no"));
 
   return TRUE;
 }
@@ -1253,10 +1253,10 @@ _gdk_x11_screen_update_visuals_for_gl (GdkScreen *screen)
       glXGetConfig (dpy, &visual_list[0], GLX_DEPTH_SIZE, &gl_info[i].depth_size);
       glXGetConfig (dpy, &visual_list[0], GLX_STENCIL_SIZE, &gl_info[i].stencil_size);
 
-      if (display_x11->has_glx_multisample)
+      if (display_x11->has_multisample)
         glXGetConfig(dpy, &visual_list[0], GLX_SAMPLE_BUFFERS_ARB, &gl_info[i].num_multisample);
 
-      if (display_x11->has_glx_visual_rating)
+      if (display_x11->has_visual_rating)
         glXGetConfig(dpy, &visual_list[0], GLX_VISUAL_CAVEAT_EXT, &gl_info[i].visual_caveat);
       else
         gl_info[i].visual_caveat = GLX_NONE_EXT;
@@ -1348,7 +1348,7 @@ gdk_x11_display_make_gl_context_current (GdkDisplay   *display,
       return FALSE;
     }
 
-  if (context_x11->is_attached && GDK_X11_DISPLAY (display)->has_glx_swap_interval)
+  if (context_x11->is_attached && GDK_X11_DISPLAY (display)->has_swap_interval)
     {
       window = gdk_gl_context_get_window (context);
 

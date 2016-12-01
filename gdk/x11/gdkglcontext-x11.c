@@ -39,7 +39,28 @@
 
 #include <cairo/cairo-xlib.h>
 
+#include <epoxy/gl.h>
 #include <epoxy/glx.h>
+
+struct _GdkX11GLContext
+{
+  GdkGLContext parent_instance;
+
+  GLXContext glx_context;
+  GLXFBConfig glx_config;
+  GLXDrawable drawable;
+
+  guint is_attached : 1;
+  guint is_direct : 1;
+  guint do_frame_sync : 1;
+
+  guint do_blit_swap : 1;
+};
+
+struct _GdkX11GLContextClass
+{
+  GdkGLContextClass parent_class;
+};
 
 G_DEFINE_TYPE (GdkX11GLContext, gdk_x11_gl_context, GDK_TYPE_GL_CONTEXT)
 
@@ -47,9 +68,9 @@ typedef struct {
   GdkDisplay *display;
 
   GLXDrawable glx_drawable;
+  GLXWindow dummy_glx;
 
   Window dummy_xwin;
-  GLXWindow dummy_glx;
 
   guint32 last_frame_counter;
 } DrawableInfo;

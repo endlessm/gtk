@@ -8,7 +8,6 @@ DISABLE_UPDATE_UPLOADERS = 1
 include /usr/share/cdbs/1/rules/autoreconf.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/utils.mk
-include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 include /usr/share/cdbs/1/class/gnome.mk
 include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
 include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
@@ -51,7 +50,6 @@ DEV_PKG := libgtk-$(APIVER)-dev
 UDEB_PKG := $(SHARED_PKG)-udeb
 DOC_PKG := libgtk-$(APIVER)-doc
 BIN_PKG := libgtk-$(APIVER)-bin
-DEBUG_PKG := $(SHARED_PKG)-dbg
 EXAMPLES_PKG := gtk-$(APIVER)-examples
 
 # files larger than 4k in size will be compressed by dh_compress
@@ -75,6 +73,7 @@ DEB_CONFIGURE_FLAGS_shared = \
 			--enable-broadway-backend \
 			--enable-x11-backend \
 			--enable-gtk-doc \
+			--enable-man \
 			--enable-shared \
 			--enable-introspection \
 			--enable-cloudprint \
@@ -109,6 +108,12 @@ export HOME=$(CURDIR)/debian/build
 export XDG_RUNTIME_DIR=$(HOME)
 # So that gsettings can find the (uninstalled) gtk schemas
 export XDG_DATA_DIRS=/usr/share:$(CURDIR)/debian/build
+# Put these back to their defaults if we are not running with a clean
+# environment, so that they are based on the temporary $HOME above
+unexport XDG_CACHE_HOME
+unexport XDG_CONFIG_DIRS
+unexport XDG_CONFIG_HOME
+unexport XDG_DATA_HOME
 # Get failing tests' stdout/err so we have some information when a build fails
 export VERBOSE=1
 
@@ -120,8 +125,6 @@ DEB_DH_MAKESHLIBS_ARGS_ALL += -X$(MODULES_BASE_PATH)
 DEB_DH_MAKESHLIBS_ARGS_$(SHARED_PKG) += -V --add-udeb=$(UDEB_PKG) -- -c4
 DEB_DH_MAKESHLIBS_ARGS_libgail-3-0 += -V -- -c4
 DEB_DH_FIXPERMS_ARGS_ALL += -X$(LIBDIR)/$(SHARED_PKG)
-DEB_DH_STRIP_ARGS = --dbg-package=$(if $(findstring libgail,$(cdbs_curpkg)),libgail-3-0-dbg,$(DEBUG_PKG))
-DEB_DH_STRIP_ARGS_$(UDEB_PKG) =
 
 # macro computing the list of 'debian/<pkg>.*" files which have a
 # corresponding ".in" file; pass the list of packages in $(1)
@@ -140,7 +143,6 @@ debian/%: debian/%.in
 		-e "s#@UDEB_PKG@#$(UDEB_PKG)#g" \
 		-e "s#@DOC_PKG@#$(DOC_PKG)#g" \
 		-e "s#@BIN_PKG@#$(BIN_PKG)#g" \
-		-e "s#@DEBUG_PKG@#$(DEBUG_PKG)#g" \
 		-e "s#@EXAMPLES_PKG@#$(EXAMPLES_PKG)#g" \
 		-e "s#@GNOME_TEAM@#$(UPLOADERS)#g" \
 		-e "s#@GTK_BINARY_VERSION@#$(GTK_BINARY_VERSION)#g" \
@@ -156,9 +158,15 @@ clean:: debian/control
 	# gross kludge to force control generation with the %.in target
 	touch debian/control.in
 	rm -f $(call dh_subst_files,$(DEB_ALL_PACKAGES))
+	rm -f testsuite/reftests/*.ui.known_fail
 	rm -rf debian/build debian/install
 
 pre-build::
+	# Mark reftests with known failures as non-fatal
+	touch testsuite/reftests/nonresizable-size.ui.known_fail
+	touch testsuite/reftests/window-show-contents-on-map.ui.known_fail
+	touch testsuite/reftests/inherit-and-initial.ui.known_fail
+	touch testsuite/reftests/textview-margins.ui.known_fail
 	# So that gsettings can find the (uninstalled) gtk schemas
 	mkdir -p debian/build/glib-2.0/schemas/
 	cp gtk/org.gtk.* debian/build/glib-2.0/schemas/

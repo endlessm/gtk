@@ -1,14 +1,366 @@
-gtk+3.0 (3.20.3-0) master; urgency=medium
-
-  * Gtk 3.20.3
-
- -- Matt Watson <mattdangerw@gmail.com>  Fri, 01 Apr 2016 17:01:24 -0700
-
-gtk+3.0 (3.18.6-0) master; urgency=medium
+gtk+3.0 (3.22.4-0) master; urgency=medium
 
   * Endless release. We are forcing a lower version for jenkins.
 
- -- Matt Watson <mattdangerw@gmail.com>  Thu, 07 Jan 2016 16:28:34 -0800
+ -- Philip Chimento <philip@endlessm.com>  Thu, 01 Dec 2016 13:59:09 -0800
+
+gtk+3.0 (3.22.4-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Drop d/p/cssshadowvalue-scale-the-blur-surface-by-the-same-fa.patch
+    - now included in upstream release.
+  * Update debian/libgtk-3-0.symbols with one addition.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Sun, 20 Nov 2016 19:22:12 +0100
+
+gtk+3.0 (3.22.3-2) unstable; urgency=medium
+
+  * d/p/cssshadowvalue-scale-the-blur-surface-by-the-same-fa.patch
+    - Added. Improve the rendering of shadow around GTK windows, this turns out
+      to be a big performance improvement for HiDPI on wayland (From upstream
+      git, bgo#772075)
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Thu, 10 Nov 2016 22:58:59 +0100
+
+gtk+3.0 (3.22.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 08 Nov 2016 17:32:27 +0100
+
+gtk+3.0 (3.22.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 25 Oct 2016 00:10:32 +0200
+
+gtk+3.0 (3.22.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Drop d/p/wayland-Avoid-negative-size-constraints.patch and
+    d/p/wayland-always-sync-state-after-a-frame-is-painted.patch, merged
+    upstream.
+  * Bump Build-Depends on libxrandr-dev to (>= 2:1.5.0). This means we can
+    drop d/p/0001-Fix-division-by-zero-when-calculating-the-refresh-ra.patch.
+    Upstream has already applied a similar patch for the Xrandr 1.5 code path
+    and we no longer need the workaround for Xrandr 1.3.
+  * Update Build-Depends as per configure.ac:
+    - Add libfontconfig1-dev.
+    - Drop libxt-dev, libxft-dev, libxrender-dev and x11proto-xext-dev.
+    - Drop Debian specific versions for various libx*-dev packages. Those
+      versions were a long time ago for gtk+2.0 when the udeb was switched
+      from DirectFB to Xlib.
+  * Update Depends of libgtk-3-dev to match the dependencies declared in the
+    pkg-config .pc files.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 01 Oct 2016 15:36:03 +0200
+
+gtk+3.0 (3.22.0-2) unstable; urgency=medium
+
+  * d/p/wayland-Avoid-negative-size-constraints.patch
+    - Added. Resolve unexpected order of size-allocation signals, fixes issues
+      with placing clutter-gtk widgets on wayland.
+      (From upstream git, bgo#771915)
+  * d/p/wayland-always-sync-state-after-a-frame-is-painted.patch
+    - Added. Always sync the state after a frame paint. Avoids things getting
+      out of sync when painting using GL as e.g. epiphany does these days.
+      (From upstream git, bgo#771553)
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 30 Sep 2016 14:36:52 +0200
+
+gtk+3.0 (3.22.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Drop dbg packages now that we have automatic dbgsym packages.
+  * Bump debhelper compat level to 9.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 20 Sep 2016 20:48:18 +0200
+
+gtk+3.0 (3.21.6-1) unstable; urgency=medium
+
+  [ Andreas Henriksson ]
+  * New upstream development release.
+  * Update (build-)dependencies according to configure.ac changes:
+    - bump wayland-protocols to >= 1.7
+  * Update debian/libgtk-3-0.symbols with a few scrolled_window additions.
+
+  [ Michael Biebl ]
+  * Refresh patches.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Wed, 14 Sep 2016 10:35:59 +0200
+
+gtk+3.0 (3.21.5-3) unstable; urgency=medium
+
+  * Mark two more reftests as known_fail and make test-suite failures fatal
+    again.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 31 Aug 2016 23:41:32 +0200
+
+gtk+3.0 (3.21.5-2) unstable; urgency=medium
+
+  * Mark the gdk_wayland_* symbols as linux-any.
+  * Drop workaround for cdbs bug which has been fixed in the mean time.
+  * Change Build-Depends on dbus-x11 to dbus. The use of dbus-launch has been
+    removed upstream so having only dbus installed is sufficient to run the
+    test-suite. (Closes: #835891)
+  * Add dbus to autopkgtest dependencies to ensure machine-id is properly
+    setup.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 31 Aug 2016 18:48:24 +0200
+
+gtk+3.0 (3.21.5-1) unstable; urgency=low
+
+  [ Simon McVittie ]
+  * Merge packaging changes from 3.20.9-1 in unstable
+
+  [ Andreas Henriksson ]
+  * New upstream release.
+  * Update build-dependencies according to configure.ac changes:
+    - bump libglib2.0-dev to >= 2.49.4
+    - bump wayland-protocols to >= 1.6
+  * Fix debian/patches/no-accessibility-dump.patch to apply again.
+  * Drop d/p/Don-t-apply-GDK_HINT_RESIZE_INC-to-GDK_WINDOW_STATE_.patch
+    - now included in upstream release.
+  * Update debian/libgtk-3-0.symbols with several additions and one missing:
+    - gdk_wayland_display_get_xdg_shell unused outside of gtk+.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 30 Aug 2016 18:13:45 +0200
+
+gtk+3.0 (3.20.9-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * Team upload
+  * New upstream release
+  * debian/control.in:
+    - Drop unnecessary version number from dependency on adwaita-icon-theme
+  * debian/patches/0001-Revert-Improve-external-drives-detection.patch:
+    - Dropped, applied in new version
+
+  [ Simon McVittie ]
+  * Another new upstream release
+  * Explicitly build-depend on docbook-xsl, libxml2-utils and xsltproc
+    to be able to generate man pages from their source code. Move docbook-xml
+    to Build-Depends since the man pages are in an Architecture: any package.
+  * Drop Build-Depends-Indep on docbook-utils, the old SGML toolchain,
+    which is currently uninstallable (#834616) and does not appear to be
+    needed for anything
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 18 Aug 2016 10:47:10 +0100
+
+gtk+3.0 (3.20.7-1) unstable; urgency=medium
+
+  [ Laurent Bigonville ]
+  * debian/control.in: Add hicolor-icon-theme as a hard dependency, the
+    package is small and only provides the directory structure of the theme.
+  * debian/control.in: Move adwaita-icon-theme dependency to the main package.
+
+  [ Emilio Pozuelo Monfort ]
+  * New upstream release.
+  * debian/patches/0001-Revert-Improve-external-drives-detection.patch:
+    + Revert upstream change that requires unstable glib 2.49.1.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Thu, 04 Aug 2016 19:07:21 +0200
+
+gtk+3.0 (3.21.4-1) experimental; urgency=medium
+
+  * New upstream release.
+  * debian/control.in:
+    + Build depend on xauth, needed for xvfb-run.
+    + Drop build-dependency on gettext and update the version requirements
+      for wayland-protocols and glib.
+  * debian/patches/wayland-add-extended-state-for-tiled.patch:
+    + Dropped, included upstream.
+  * d/p/0001-Fix-division-by-zero-when-calculating-the-refresh-ra.patch:
+    + New patch. Fix division by zero when running under Xvfb.
+  * debian/libgtk-3-0.symbols:
+    + Add new symbols.
+  * debian/rules:
+    + Don't abort on test suite failures for now. Too many new failures due
+      to deprecation warnings.
+  * Upload to experimental.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 20 Jul 2016 23:33:22 +0200
+
+gtk+3.0 (3.20.6-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Laurent Bigonville ]
+  * Drop patches/015_default-fallback-icon-theme.patch: The default icon theme
+    is already defined as Adwaita, not need to also define the fallback theme.
+
+  [ Simon McVittie ]
+  * d/rules: reset XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME so that
+    they are based on the temporary HOME
+  * Backport patch from upstream to mark tiled Mutter/Shell windows
+    as GDK_WINDOW_STATE_TILED under Wayland (with mutter >= 3.20.2-2)
+  * Add my patch from upstream bug 755947 to disable character-cell-based
+    size contraints for TILED windows, so that gnome-terminal can snap to
+    half the screen under Wayland
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 25 Jun 2016 00:19:51 +0100
+
+gtk+3.0 (3.20.6-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Drop revert-scrolledwindow-Remove-child-before-destroying.patch, merged
+    upstream.
+  * Re-enable test-suite.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 31 May 2016 21:33:34 +0200
+
+gtk+3.0 (3.20.5-4) unstable; urgency=medium
+
+  * Work around a bug in cdbs which causes the package to FTBFS; see #825135
+    for further details.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 26 May 2016 08:08:16 +0200
+
+gtk+3.0 (3.20.5-3) unstable; urgency=medium
+
+  * Make it simpler to bootstrap the package by marking the build dependencies
+    which are required to run the test-suite with <!nocheck>.
+    (Closes: #747392)
+  * Bump Build-Depends on debhelper to (>= 9.20141010) and dpkg-dev to
+    (>= 1.17.14) for build dependency restrictions support.
+  * Temporarily disable the test suite (and its build-dependencies) to allow
+    building the new gtk-update-icon-cache package. Our buildds don't support
+    build profiles yet, so we'll have to bootstrap manually for now.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 23 May 2016 01:01:27 +0200
+
+gtk+3.0 (3.20.5-2) unstable; urgency=medium
+
+  * Split gtk-update-icon-cache utility out of libgtk-3-bin into a separate
+    package called gtk-update-icon-cache to break a dependency cycle with
+    adwaita-icon-theme when building the package. (Closes: #824999)
+    As the gtk-update-icon-cache binary doesn't actually have any libgtk-3-0
+    dependency, there is no longer a reason to ship a gtk2 and gtk3 variant.
+    So from now on we will only ship one implementation built from src:gtk+3.0
+    and drop the Debian specific -3.0 suffix. To simplify the transition make
+    libgtk-3-bin depend on gtk-update-icon-cache. Once all theme packages have
+    been updated, this dependency can be dropped.
+  * Cherry-pick patch from upstream Git which reverts a commit that was
+    causing crashes in the filechooser in some applications.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 22 May 2016 08:52:19 +0200
+
+gtk+3.0 (3.20.5-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Refresh patches.
+  * Bump Standards-Version to 3.9.8.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 21 May 2016 00:11:13 +0200
+
+gtk+3.0 (3.20.4-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 10 May 2016 14:29:37 +0200
+
+gtk+3.0 (3.20.3-2) unstable; urgency=medium
+
+  * Restore debian/patches/reftest-known-fail.patch so we can mark known
+    failing tests as non-fatal.
+  * Drop debian/patches/disable-flaky-textview-margins-reftest.patch and tag
+    textview-margins.ui as known-fail.
+  * Mark button-wrapping.ui reftest as known-fail, it currently fails on
+    mips(64)el and prevents testing migration and important fixes in other
+    packages reaching testing.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 02 May 2016 01:18:04 +0200
+
+gtk+3.0 (3.20.3-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Drop debian/patches/git_window-Remove-suspicious-branch.patch, merged
+    upstream and refresh the remaining patches.
+  * Upload to unstable.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 16 Apr 2016 21:13:07 +0200
+
+gtk+3.0 (3.20.2-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Drop debian/patches/git_fix_emacs.patch, included in release.
+  * Add debian/patches/git_window-Remove-suspicious-branch.patch
+    - from upstream git, reverts a revert in 3.20.2 that causes the
+      testsuite to fail. Emacs users watch out!
+
+ -- Andreas Henriksson <andreas@fatal.se>  Mon, 11 Apr 2016 12:53:17 +0200
+
+gtk+3.0 (3.20.1-2) experimental; urgency=medium
+
+  * Add debian/patches/disable-flaky-textview-margins-reftest.patch
+
+ -- Andreas Henriksson <andreas@fatal.se>  Wed, 30 Mar 2016 14:02:10 +0200
+
+gtk+3.0 (3.20.1-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Drop debian/patches/git_a11y_GTK_CSD_distcheck.patch, included in release.
+  * Add debian/patches/git_fix_emacs.patch, cherry-picked from upstream git.
+    Thanks to Matteo F. Vescovi for verifying the commit fixed the emacs problem.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Wed, 30 Mar 2016 11:08:26 +0200
+
+gtk+3.0 (3.20.0-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Make testsuite fatal again.
+  * Add debian/patches/git_a11y_GTK_CSD_distcheck.patch
+    - cherry-pick commit from upstream to use client-side decorations
+      for a11y tests when running under distcheck.
+  * Drop debian/patches/reftest-known-fail.patch
+  * Stop tagging reftests as known fail since they should be fixed now:
+    - style-properties-nth-child.ui
+    - label-text-shadow-changes-modify-clip.ui
+  * Add debian/patches/no-accessibility-dump.patch
+    - skip this test until someone figures out how to reliably run it
+      always with CSD enabled, to match testsuite expected data.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Wed, 23 Mar 2016 14:10:27 +0100
+
+gtk+3.0 (3.19.12-1) experimental; urgency=medium
+
+  * New upstream development release+snapshot.
+  * Update (build-)dependencies according to configure.ac changes:
+    - add wayland-protocols (>= 1.1)
+    - bump libwayland-dev to 1.9.91
+    - add libharfbuzz-dev (>= 0.9), libpango1.0-dev
+  * Temporarily make testsuite non-fatal while investigating.
+  * libgtk-3-bin.install:
+    - ship new gtk-query-settings tool.
+    - ship gtk-builder gettext (its) files.
+    - run wrap-and-sort on this file while at it.
+  * Update debian/libgtk-3-0.symbols with new additions.
+    - also drops an internal unused wayland-related drag and drop symbol.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 15 Mar 2016 11:34:25 +0100
+
+gtk+3.0 (3.18.9-1) unstable; urgency=medium
+
+  [ Michael Biebl ]
+  * New upstream release.
+  * Bump Standards-Version to 3.9.7.
+
+  [ Uwe Kleine-König ]
+  * Remove debian/{build,install} in clean target. (Closes: #792736)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 12 Mar 2016 21:29:26 +0100
+
+gtk+3.0 (3.18.8-1) unstable; urgency=medium
+
+  * New upstream stable release 3.18.8
+
+ -- Iain Lane <iain@orangesquash.org.uk>  Wed, 24 Feb 2016 17:55:46 +0000
+
+gtk+3.0 (3.18.7-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 02 Feb 2016 19:12:28 +0100
 
 gtk+3.0 (3.18.6-1) unstable; urgency=medium
 

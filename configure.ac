@@ -320,6 +320,10 @@ AC_ARG_ENABLE(xdamage,
               [AS_HELP_STRING([--enable-xdamage],
                               [support X Damage extension [default=maybe]])],,
               [enable_xdamage="maybe"])
+AC_ARG_ENABLE(egl-x11,
+              [AS_HELP_STRING([--enable-egl-x11],
+                              [Use EGL and XLib instead of GLX [default=no]])],,
+              [enable_egl_x11=no])
 
 AC_ARG_ENABLE(x11-backend,
               [AS_HELP_STRING([--enable-x11-backend],
@@ -1276,6 +1280,19 @@ if test "x$enable_x11_backend" = xyes; then
       GTK_PACKAGES_FOR_X="$GTK_PACKAGES_FOR_X xdamage"
     elif test x"$enable_xdamage" = xyes; then
       AC_MSG_ERROR([Xdamage support requested but xdamage not found])
+    fi
+  fi
+
+  # Checks whether to use EGL-X11 or GLX
+
+  if test x"$enable_egl_x11" != xno; then
+    if $PKG_CONFIG --exists egl ; then
+      AC_DEFINE(HAVE_EGL_X11, 1, [Use EGL-X11 instead of GLX])
+      AM_CONDITIONAL(USE_EGL_X11, true)
+
+      X_PACKAGES="$X_PACKAGES egl"
+    elif test x"$enable_egl_x11" = xyes; then
+      AC_MSG_ERROR([EGL-X11 support requested but egl not found])
     fi
   fi
 

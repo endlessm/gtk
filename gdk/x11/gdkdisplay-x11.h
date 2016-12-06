@@ -149,6 +149,7 @@ struct _GdkX11Display
   guint has_multisample : 1;
   guint has_visual_rating : 1;
   guint has_create_es2_context : 1;
+  guint has_swap_buffers_with_damage : 1;
 };
 
 struct _GdkX11DisplayClass

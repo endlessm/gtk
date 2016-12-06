@@ -33,7 +33,6 @@
 
 G_BEGIN_DECLS
 
-gboolean        gdk_x11_screen_init_gl                          (GdkScreen         *screen);
 GdkGLContext *  gdk_x11_window_create_gl_context                (GdkWindow         *window,
 								 gboolean           attached,
                                                                  GdkGLContext      *share,

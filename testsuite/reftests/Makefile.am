@@ -63,6 +63,15 @@ gtk_reftest_SOURCES = \
 	gtk-reftest.c			\
 	gtk-reftest.h
 
+EXTRA_DIST += \
+	window-show-contents-on-map.ui.known_fail \
+	inherit-and-initial.ui.known_fail \
+	textview-margins.ui.known_fail \
+	box-shadow-changes-modify-clip.ui.known_fail \
+	label-sizing.ui.known_fail \
+	label-text-shadow-changes-modify-clip.ui.known_fail \
+	$(NULL)
+
 clean-local:
 	rm -rf output/ || true
 

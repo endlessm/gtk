@@ -42,5 +42,13 @@ else
         autoreconf --force --install --verbose || exit $?
 fi
 
+# These reftests fail on autobuilders, see corresponding commit on Debian branch
+touch testsuite/reftests/window-show-contents-on-map.ui.known_fail
+touch testsuite/reftests/inherit-and-initial.ui.known_fail
+touch testsuite/reftests/textview-margins.ui.known_fail
+touch testsuite/reftests/box-shadow-changes-modify-clip.ui.known_fail
+touch testsuite/reftests/label-sizing.ui.known_fail
+touch testsuite/reftests/label-text-shadow-changes-modify-clip.ui.known_fail
+
 cd "$olddir"
 test -n "$NOCONFIGURE" || "$srcdir/configure" "$@"

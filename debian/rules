@@ -119,6 +119,10 @@ ifeq ($(filter %-doc,$(built_binaries)),)
 configure_flags_deb += --disable-gtk-doc --disable-man
 endif
 
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
+configure_flags_deb += --enable-egl-x11
+endif
+
 configure_flags_udeb = \
 	--disable-broadway-backend \
 	--disable-wayland-backend \

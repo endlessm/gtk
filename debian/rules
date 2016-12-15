@@ -92,6 +92,10 @@ else
 DEB_CONFIGURE_FLAGS_shared += --disable-wayland-backend
 endif
 
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
+DEB_CONFIGURE_EXTRA_FLAGS += --enable-egl-x11
+endif
+
 DEB_CONFIGURE_FLAGS_shared_udeb = \
 			--disable-broadway-backend \
 			--disable-wayland-backend \

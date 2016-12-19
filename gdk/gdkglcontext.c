@@ -236,6 +236,123 @@ gdk_gl_context_get_property (GObject    *gobject,
     }
 }
 
+/* Based on gdk_cairo_surface_paint_pixbuf() */
+static inline void
+image_surface_rgba_to_argb (cairo_surface_t *image)
+{
+  gint i, width, height, stride;
+  cairo_format_t format;
+  guint t1,t2,t3;
+  guchar *data;
+
+  width = cairo_image_surface_get_width (image);
+  height = cairo_image_surface_get_height (image);
+  stride = cairo_image_surface_get_stride (image);
+  format = cairo_image_surface_get_format (image);
+  data = cairo_image_surface_get_data (image);
+
+#define MULT(d,c,a,t) G_STMT_START { t = c * a + 0x80; d = ((t >> 8) + t) >> 8; } G_STMT_END
+
+  for (i = 0; i < height; i++)
+    {
+      guchar *q = data + i * stride;
+      guchar *end = q + 4 * width;
+
+      if (format == CAIRO_FORMAT_RGB24)
+        while (q < end)
+          {
+            guint32 data = *((guint32*)q);
+            guchar *p = (guchar*) &data;
+
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+            q[0] = p[2];
+            q[1] = p[1];
+            q[2] = p[0];
+#else
+            q[1] = p[0];
+            q[2] = p[1];
+            q[3] = p[2];
+#endif
+            q += 4;
+          }
+      else if (format == CAIRO_FORMAT_ARGB32)
+        while (q < end)
+          {
+            guint32 data = *((guint32*)q);
+            guchar *p = (guchar*) &data;
+
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+            MULT(q[0], p[2], p[3], t1);
+            MULT(q[1], p[1], p[3], t2);
+            MULT(q[2], p[0], p[3], t3);
+            q[3] = p[3];
+#else
+            q[0] = p[3];
+            MULT(q[1], p[0], p[3], t1);
+            MULT(q[2], p[1], p[3], t2);
+            MULT(q[3], p[2], p[3], t3);
+#endif
+            q += 4;
+          }
+    }
+
+#undef MULT
+}
+
+void
+gdk_gl_context_download_texture (GdkGLContext    *context,
+                                 int              x,
+                                 int              y,
+                                 int              width,
+                                 int              height,
+                                 cairo_surface_t *image_surface)
+{
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (context);
+
+  g_return_if_fail (GDK_IS_GL_CONTEXT (context));
+
+  /* GL_UNPACK_ROW_LENGTH is available on desktop GL, OpenGL ES >= 3.0, or if
+   * the GL_EXT_unpack_subimage extension for OpenGL ES 2.0 is available
+   */
+  if (!priv->use_es ||
+      (priv->use_es && (priv->gl_version >= 30 || priv->has_unpack_subimage)))
+    {
+      glPixelStorei (GL_PACK_ALIGNMENT, 4);
+      glPixelStorei (GL_PACK_ROW_LENGTH, cairo_image_surface_get_stride (image_surface) / 4);
+
+      if (priv->use_es)
+        glReadPixels (x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+                      cairo_image_surface_get_data (image_surface));
+      else
+        glReadPixels (x, y, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+                      cairo_image_surface_get_data (image_surface));
+
+      glPixelStorei (GL_PACK_ROW_LENGTH, 0);
+    }
+  else
+    {
+      GLvoid *data = cairo_image_surface_get_data (image_surface);
+      int stride = cairo_image_surface_get_stride (image_surface);
+      int i;
+
+      if (priv->use_es)
+        {
+          for (i = y; i < height; i++)
+            glReadPixels (x, i, width, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                         (unsigned char *) data + (i * stride));
+        }
+      else
+        {
+          for (i = y; i < height; i++)
+            glReadPixels (x, i, width, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+                          (unsigned char *) data + (i * stride));
+        }
+    }
+
+  if (priv->use_es)
+    image_surface_rgba_to_argb (image_surface);
+}
+
 void
 gdk_gl_context_upload_texture (GdkGLContext    *context,
                                cairo_surface_t *image_surface,

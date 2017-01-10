@@ -78,18 +78,13 @@ DEB_CONFIGURE_FLAGS_shared = \
 			--enable-shared \
 			--enable-introspection \
 			--enable-cloudprint \
-			--disable-static
+			--disable-static \
+			--disable-wayland-backend
 
 ifeq (,$(filter stage1,$(DEB_BUILD_PROFILES)))
 DEB_CONFIGURE_FLAGS_shared += --enable-colord
 else
 DEB_CONFIGURE_FLAGS_shared += --disable-colord
-endif
-
-ifeq (linux,$(DEB_HOST_ARCH_OS))
-DEB_CONFIGURE_FLAGS_shared += --enable-wayland-backend
-else
-DEB_CONFIGURE_FLAGS_shared += --disable-wayland-backend
 endif
 
 ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))

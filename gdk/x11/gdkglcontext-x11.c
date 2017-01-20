@@ -854,6 +854,32 @@ gdk_x11_screen_init_gl (GdkScreen *screen)
   if (_gdk_gl_flags & GDK_GL_DISABLE)
     return FALSE;
 
+  /* This is an ad hoc check that bypasses libepoxy to check if libGL.so is
+   * unavailable, and disables GL support if that's the case
+   *
+   * Ideally, libepoxy should do this for us, but that would require adding
+   * new API, and we'd need a fallback anyway.
+   */
+  {
+    Bool (* fp_glXQueryExtension) (Display *dpy, int *err_base, int *ev_base);
+    GModule *module = g_module_open ("libGL.so.1", 0);
+
+    if (module == NULL)
+      {
+        GDK_NOTE (OPENGL, g_message ("No libGL.so found"));
+        return FALSE;
+      }
+
+    if (!g_module_symbol (module, "glXQueryExtension", (gpointer *) &fp_glXQueryExtension))
+      {
+        GDK_NOTE (OPENGL, g_message ("No glXQueryExtension symbol found"));
+        g_module_close (module);
+        return FALSE;
+      }
+
+    g_module_close (module);
+  }
+
   dpy = gdk_x11_display_get_xdisplay (display);
 
   if (!glXQueryExtension (dpy, &error_base, &event_base))

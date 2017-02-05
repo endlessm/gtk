@@ -2009,3 +2009,43 @@ read if you used those and something break with a version upgrade you're on your
 @define-color wm_button_active_color_b shade(#33393b, 0.89);
 @define-color wm_button_active_color_c shade(#33393b, 0.9);
 @define-color content_view_bg #232729;
+headerbar.default-decoration {
+  color: #dfdbd2;
+  background-image: linear-gradient(to bottom, #464646, #1e1e1e);
+  box-shadow: inset 0 -1px #0a0a0a, inset 0 -2px #292929, inset 0 1px  #4d4d4d;
+  border: none;
+  min-height: 36px; }
+  headerbar.default-decoration:dir(rtl) {
+    padding: 0 16px 0 6px; }
+  headerbar.default-decoration:dir(ltr) {
+    padding: 0 6px 0 16px; }
+  headerbar.default-decoration.maximized {
+    box-shadow: inset 0 -1px #0a0a0a, inset 0 -2px #292929; }
+  headerbar.default-decoration:backdrop {
+    color: #807d78;
+    background-image: linear-gradient(to bottom, #282828, #1e1e1e);
+    box-shadow: inset 0 -1px #0a0a0a, inset 0 -2px #292929, inset 0 1px  #303030; }
+    headerbar.default-decoration:backdrop.maximized {
+      box-shadow: inset 0 -1px #0a0a0a, inset 0 -2px #292929; }
+  headerbar.default-decoration button.titlebutton {
+    color: #8c8c8c;
+    background-image: none;
+    border: none;
+    border-image: none;
+    box-shadow: none;
+    background-color: transparent;
+    border-radius: 2px; }
+    headerbar.default-decoration button.titlebutton:hover {
+      color: #dcdcdc;
+      background-image: linear-gradient(to bottom, #838383 2%, #6c6c6c 5%, #444444); }
+    headerbar.default-decoration button.titlebutton:active {
+      color: #787878;
+      background-image: linear-gradient(to bottom, #4f4f4f 2%, #474747 5%, #434343); }
+    headerbar.default-decoration button.titlebutton:backdrop {
+      background-image: none; }
+
+/* Shadow beneath the top bar */
+.mutter-topbar-shadow {
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85); }

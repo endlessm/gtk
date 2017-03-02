@@ -410,6 +410,108 @@ gdk_x11_gl_context_end_frame (GdkGLContext   *context,
     eglSwapBuffers (edpy, esurface);
 }
 
+static gboolean
+gdk_x11_gl_context_texture_from_surface (GdkGLContext    *context,
+                                         cairo_surface_t *surface,
+                                         cairo_region_t  *region)
+{
+  GdkWindow *window = gdk_gl_context_get_window (context);
+  GdkDisplay *display = gdk_window_get_display (window);
+  GdkX11Display *display_x11 = GDK_X11_DISPLAY (display);
+  EGLDisplay edpy = gdk_x11_display_get_egl_display (display);
+  EGLImageKHR img = EGL_NO_IMAGE_KHR;
+  const EGLint attribs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE };
+  double device_x_offset, device_y_offset;
+  cairo_rectangle_int_t rect;
+  int n_rects, i;
+  int unscaled_window_height;
+  int window_scale;
+  unsigned int texture_id;
+  double sx, sy;
+  float uscale, vscale;
+  GdkTexturedQuad *quads;
+
+  if (!display_x11->has_image_pixmap ||
+      cairo_surface_get_type (surface) != CAIRO_SURFACE_TYPE_XLIB)
+    return FALSE;
+
+  img = eglCreateImageKHR (edpy, EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+                           (EGLClientBuffer)cairo_xlib_surface_get_drawable (surface),
+                           attribs);
+
+  if (img == EGL_NO_IMAGE_KHR)
+    return FALSE;
+
+  GDK_NOTE (OPENGL, g_message ("Using eglCreateImageKHR() to draw surface"));
+
+  window_scale = gdk_window_get_scale_factor (window);
+  gdk_window_get_unscaled_size (window, NULL, &unscaled_window_height);
+
+  sx = sy = 1;
+  cairo_surface_get_device_scale (window->current_paint.surface, &sx, &sy);
+  cairo_surface_get_device_offset (surface, &device_x_offset, &device_y_offset);
+
+  glGenTextures (1, &texture_id);
+  glBindTexture (GL_TEXTURE_2D, texture_id);
+
+  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glEGLImageTargetTexture2DOES (GL_TEXTURE_2D, img);
+
+  glEnable (GL_SCISSOR_TEST);
+
+  n_rects = cairo_region_num_rectangles (region);
+  quads = g_new (GdkTexturedQuad, n_rects);
+
+#define FLIP_Y(_y) (unscaled_window_height - (_y))
+
+  cairo_region_get_extents (region, &rect);
+  glScissor (rect.x * window_scale, FLIP_Y((rect.y + rect.height) * window_scale),
+             rect.width * window_scale, rect.height * window_scale);
+
+  for (i = 0; i < n_rects; i++)
+    {
+      int src_x, src_y, src_height, src_width;
+
+      cairo_region_get_rectangle (region, i, &rect);
+
+      src_x = rect.x * sx + device_x_offset;
+      src_y = rect.y * sy + device_y_offset;
+      src_width = rect.width * sx;
+      src_height = rect.height * sy;
+
+      uscale = 1.0 / cairo_xlib_surface_get_width (surface);
+      vscale = 1.0 / cairo_xlib_surface_get_height (surface);
+
+      {
+        GdkTexturedQuad quad = {
+          rect.x * window_scale, FLIP_Y(rect.y * window_scale),
+          (rect.x + rect.width) * window_scale, FLIP_Y((rect.y + rect.height) * window_scale),
+          uscale * src_x, vscale * src_y,
+          uscale * (src_x + src_width), vscale * (src_y + src_height),
+        };
+
+        quads[i] = quad;
+      }
+    }
+
+#undef FLIP_Y
+
+  gdk_gl_texture_quads (context, GL_TEXTURE_2D, n_rects, quads, FALSE);
+  g_free (quads);
+
+  glDisable (GL_SCISSOR_TEST);
+
+  eglDestroyImageKHR (edpy, img);
+
+  glDeleteTextures (1, &texture_id);
+
+  return TRUE;
+}
+
 #define N_EGL_ATTRS 16
 
 static gboolean
@@ -577,6 +679,7 @@ gdk_x11_gl_context_class_init (GdkX11GLContextClass *klass)
 
   context_class->realize = gdk_x11_gl_context_realize;
   context_class->end_frame = gdk_x11_gl_context_end_frame;
+  context_class->texture_from_surface = gdk_x11_gl_context_texture_from_surface;
 
   gobject_class->dispose = gdk_x11_gl_context_dispose;
 }
@@ -621,6 +724,8 @@ gdk_x11_display_init_gl (GdkDisplay *display)
   display_x11->has_create_es2_context = FALSE;
   display_x11->has_swap_interval = TRUE;
   display_x11->has_texture_from_pixmap = FALSE;
+  display_x11->has_image_pixmap =
+    epoxy_has_egl_extension (edpy, "EGL_KHR_image_pixmap");
   display_x11->has_video_sync = FALSE;
   display_x11->has_buffer_age =
     epoxy_has_egl_extension (edpy, "EGL_EXT_buffer_age");
@@ -638,13 +743,15 @@ gdk_x11_display_init_gl (GdkDisplay *display)
                        " - Checked extensions:\n"
                        "\t* EGL_KHR_create_context: %s\n"
                        "\t* EGL_EXT_buffer_age: %s\n"
-                       "\t* EGL_EXT_swap_buffers_with_damage: %s",
+                       "\t* EGL_EXT_swap_buffers_with_damage: %s\n"
+                       "\t* EGL_KHR_image_pixmap: %s",
                        eglQueryString (edpy, EGL_VENDOR),
                        eglQueryString (edpy, EGL_VERSION),
                        eglQueryString (edpy, EGL_CLIENT_APIS),
                        display_x11->has_create_context ? "yes" : "no",
                        display_x11->has_buffer_age ? "yes" : "no",
-                       display_x11->has_swap_buffers_with_damage ? "yes" : "no"));
+                       display_x11->has_swap_buffers_with_damage ? "yes" : "no",
+                       display_x11->has_image_pixmap ? "yes" : "no"));
 
   return TRUE;
 }

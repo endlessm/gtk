@@ -33,6 +33,10 @@
 #include "gdkx11property.h"
 #include <X11/Xatom.h>
 
+#ifdef HAVE_XCOMPOSITE
+#include <X11/extensions/Xcomposite.h>
+#endif
+
 #include "gdkinternals.h"
 
 #include "gdkintl.h"
@@ -766,6 +770,34 @@ gdk_x11_window_create_gl_context (GdkWindow    *window,
   return GDK_GL_CONTEXT (context);
 }
 
+#ifdef HAVE_XCOMPOSITE
+static gboolean
+window_is_composited (GdkDisplay *display,
+                      GdkWindow  *window)
+{
+  Display *dpy = GDK_DISPLAY_XDISPLAY (display);
+  Pixmap pixmap;
+
+  gdk_x11_display_error_trap_push (display);
+
+  /* This is kind of an expensive check, because there's no XComposite
+   * API to check if a Window has been unredirected. We check if there's
+   * a named Pixmap for it, and if we fail it means that the screen is
+   * not composited or the window is unredirected or not visible
+   */
+  pixmap = XCompositeNameWindowPixmap (dpy, GDK_WINDOW_XID (window));
+
+  XSync (GDK_DISPLAY_XDISPLAY (display), False);
+
+  if (gdk_x11_display_error_trap_pop (display))
+    return FALSE;
+
+  XFreePixmap (GDK_DISPLAY_XDISPLAY (display), pixmap);
+
+  return TRUE;
+}
+#endif /* HAVE_XCOMPOSITE */
+
 gboolean
 gdk_x11_display_make_gl_context_current (GdkDisplay   *display,
                                          GdkGLContext *context)
@@ -810,13 +842,20 @@ gdk_x11_display_make_gl_context_current (GdkDisplay   *display,
 
   if (context_x11->is_attached)
     {
-      /* If the WM is compositing there is no particular need to delay
-       * the swap when drawing on the offscreen, rendering to the screen
-       * happens later anyway, and its up to the compositor to sync that
-       * to the vblank. */
       GdkScreen *screen = gdk_window_get_screen (window);
+      gboolean is_composited = gdk_screen_is_composited (screen);
 
-      do_frame_sync = ! gdk_screen_is_composited (screen);
+#ifdef HAVE_XCOMPOSITE
+      /* If the WM is compositing and the window is redirected there is no
+       * particular need to delay the swap when drawing on the offscreen,
+       * rendering to the screen happens later anyway, and its up to the
+       * compositor to sync that to the vblank.
+       */
+      if (is_composited)
+        is_composited = window_is_composited (display, window->impl_window);
+#endif /* HAVE_XCOMPOSITE */
+
+      do_frame_sync = !is_composited;
 
       if (do_frame_sync != context_x11->do_frame_sync)
         {

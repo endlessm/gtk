@@ -147,6 +147,7 @@ struct _GdkToplevelX11
    * to the extended update counter */
   guint pending_counter_value_is_extended : 1;
   guint configure_counter_value_is_extended : 1;
+  guint unredirected : 1;       /* _GTK_WINDOW_UNREDIRECTED */
 
   gulong map_serial;	/* Serial of last transition from unmapped */
   

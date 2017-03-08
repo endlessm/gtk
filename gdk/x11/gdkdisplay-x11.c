@@ -615,6 +615,37 @@ get_event_xwindow (XEvent             *xevent)
   return xwindow;
 }
 
+static inline void
+gdk_check_window_unredirected (GdkDisplay     *display,
+                               GdkToplevelX11 *toplevel,
+                               GdkWindow      *window,
+                               Atom            property)
+{
+  Atom type = None;
+  gint format;
+  gulong nitems;
+  gulong bytes_after;
+  guchar *data;
+
+  gdk_x11_display_error_trap_push (display);
+  XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display),
+                      GDK_WINDOW_XID (window),
+                      property,
+                      0, G_MAXLONG,
+                      False, XA_CARDINAL,
+                      &type, &format, &nitems,
+                      &bytes_after, &data);
+  gdk_x11_display_error_trap_pop_ignored (display);
+
+  if (type != None)
+    {
+      toplevel->unredirected = *((gint*)data) ? TRUE : FALSE;
+      XFree (data);
+    }
+  else
+    toplevel->unredirected = FALSE;
+}
+
 static gboolean
 gdk_x11_display_translate_event (GdkEventTranslator *translator,
                                  GdkDisplay         *display,
@@ -1068,6 +1099,9 @@ gdk_x11_display_translate_event (GdkEventTranslator *translator,
 	  if (xevent->xproperty.atom == gdk_x11_get_xatom_by_name_for_display (display, "_GTK_EDGE_CONSTRAINTS"))
 	    gdk_check_edge_constraints_changed (window);
 	}
+
+      if (toplevel && xevent->xproperty.atom == gdk_x11_get_xatom_by_name_for_display (display, "_GTK_WINDOW_UNREDIRECTED"))
+        gdk_check_window_unredirected (display, toplevel, window, xevent->xproperty.atom);
 
       if (window->event_mask & GDK_PROPERTY_CHANGE_MASK)
 	{

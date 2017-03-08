@@ -38,6 +38,7 @@
 #endif
 
 #include "gdkinternals.h"
+#include "gdkwindow-x11.h"
 
 #include "gdkintl.h"
 
@@ -877,11 +878,11 @@ gdk_x11_window_create_gl_context (GdkWindow    *window,
   return GDK_GL_CONTEXT (context);
 }
 
-#ifdef HAVE_XCOMPOSITE
-static gboolean
+static inline gboolean
 window_is_composited (GdkDisplay *display,
                       GdkWindow  *window)
 {
+#ifdef HAVE_XCOMPOSITE
   Display *dpy = GDK_DISPLAY_XDISPLAY (display);
   Pixmap pixmap;
 
@@ -894,16 +895,19 @@ window_is_composited (GdkDisplay *display,
    */
   pixmap = XCompositeNameWindowPixmap (dpy, GDK_WINDOW_XID (window));
 
-  XSync (GDK_DISPLAY_XDISPLAY (display), False);
+  XSync (dpy, False);
 
   if (gdk_x11_display_error_trap_pop (display))
     return FALSE;
 
-  XFreePixmap (GDK_DISPLAY_XDISPLAY (display), pixmap);
+  XFreePixmap (dpy, pixmap);
 
   return TRUE;
+#else
+  return FALSE;
+#endif
 }
-#endif /* HAVE_XCOMPOSITE */
+
 
 gboolean
 gdk_x11_display_make_gl_context_current (GdkDisplay   *display,
@@ -951,16 +955,22 @@ gdk_x11_display_make_gl_context_current (GdkDisplay   *display,
     {
       GdkScreen *screen = gdk_window_get_screen (window);
       gboolean is_composited = gdk_screen_is_composited (screen);
+      GdkToplevelX11 *toplevel = _gdk_x11_window_get_toplevel (window);
 
-#ifdef HAVE_XCOMPOSITE
       /* If the WM is compositing and the window is redirected there is no
        * particular need to delay the swap when drawing on the offscreen,
        * rendering to the screen happens later anyway, and its up to the
        * compositor to sync that to the vblank.
        */
       if (is_composited)
-        is_composited = window_is_composited (display, window->impl_window);
-#endif /* HAVE_XCOMPOSITE */
+        {
+          GdkAtom atom = gdk_atom_intern_static_string ("_GTK_WINDOW_UNREDIRECTED");
+
+          if (toplevel && gdk_x11_screen_supports_net_wm_hint (screen, atom))
+            is_composited = !toplevel->unredirected;
+          else if (gdk_window_get_state (window) & GDK_WINDOW_STATE_FULLSCREEN)
+            is_composited = window_is_composited (display, window->impl_window);
+        }
 
       do_frame_sync = !is_composited;
 

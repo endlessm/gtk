@@ -72,3 +72,10 @@ headerbar.default-decoration {
   border-style: solid;
   border-color: transparentize(black, 0.15);
 }
+
+/* Set dark background for Chrome and Chromium > 59 top bar */
+.header-bar.chromium {
+  background-image: none;
+  background-color: #464646;
+  box-shadow: none;
+}

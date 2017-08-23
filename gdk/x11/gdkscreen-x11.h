@@ -46,6 +46,8 @@ struct _GdkX11Screen
   gint width;
   gint height;
 
+  GdkRectangle workarea;
+
   gint window_scale;
   gboolean fixed_window_scale;
 

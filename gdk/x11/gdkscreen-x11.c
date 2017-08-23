@@ -1002,7 +1002,7 @@ init_randr_support (GdkScreen *screen)
   /* NB: This is also needed for XSettings, so don't remove. */
   XSelectInput (GDK_SCREEN_XDISPLAY (screen),
                 x11_screen->xroot_window,
-                StructureNotifyMask);
+                StructureNotifyMask | PropertyChangeMask);
 
 #ifdef HAVE_RANDR
   if (!GDK_X11_DISPLAY (gdk_screen_get_display (screen))->have_randr12)

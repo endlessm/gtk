@@ -494,6 +494,25 @@ gdk_monitor_set_model (GdkMonitor *monitor,
 }
 
 void
+gdk_monitor_update_workarea (GdkMonitor *monitor)
+{
+  GdkRectangle workarea;
+  GdkScreen *screen;
+
+  /* screen will be NULL during initialization */
+  screen = gdk_display_get_default_screen (monitor->display);
+  if (!screen)
+    return;
+
+  gdk_monitor_get_workarea (monitor, &workarea);
+  if (gdk_rectangle_equal (&workarea, &monitor->workarea))
+    return;
+
+  monitor->workarea = workarea;
+  g_object_notify (G_OBJECT (monitor), "workarea");
+}
+
+void
 gdk_monitor_set_position (GdkMonitor *monitor,
                           int         x,
                           int         y)

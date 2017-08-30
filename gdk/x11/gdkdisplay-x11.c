@@ -915,6 +915,9 @@ gdk_x11_display_translate_event (GdkEventTranslator *translator,
       if (toplevel && xevent->xproperty.atom == gdk_x11_get_xatom_by_name_for_display (display, "_GTK_WINDOW_UNREDIRECTED"))
         gdk_check_window_unredirected (display, toplevel, window, xevent->xproperty.atom);
 
+      if (xevent->xproperty.atom == gdk_x11_get_xatom_by_name_for_display (display, "_NET_WORKAREA"))
+	_gdk_x11_screen_size_changed (screen, xevent);
+
       if (window->event_mask & GDK_PROPERTY_CHANGE_MASK)
 	{
 	  event->property.type = GDK_PROPERTY_NOTIFY;

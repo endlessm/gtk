@@ -511,7 +511,7 @@ init_randr15 (GdkScreen *screen, gboolean *changed)
 
       gdk_monitor_set_position (GDK_MONITOR (monitor), newgeo.x, newgeo.y);
       gdk_monitor_set_size (GDK_MONITOR (monitor), newgeo.width, newgeo.height);
-      g_object_notify (G_OBJECT (monitor), "workarea");
+      gdk_monitor_update_workarea (GDK_MONITOR (monitor));
       gdk_monitor_set_physical_size (GDK_MONITOR (monitor),
                                      rr_monitors[i].mwidth,
                                      rr_monitors[i].mheight);
@@ -673,7 +673,7 @@ init_randr13 (GdkScreen *screen, gboolean *changed)
 
           gdk_monitor_set_position (GDK_MONITOR (monitor), newgeo.x, newgeo.y);
           gdk_monitor_set_size (GDK_MONITOR (monitor), newgeo.width, newgeo.height);
-          g_object_notify (G_OBJECT (monitor), "workarea");
+          gdk_monitor_update_workarea (GDK_MONITOR (monitor));
           gdk_monitor_set_physical_size (GDK_MONITOR (monitor),
                                          output_info->mm_width,
                                          output_info->mm_height);
@@ -803,7 +803,7 @@ init_no_multihead (GdkScreen *screen, gboolean *changed)
   gdk_monitor_set_position (GDK_MONITOR (monitor), newgeo.x, newgeo.y);
   gdk_monitor_set_size (GDK_MONITOR (monitor), newgeo.width, newgeo.height);
 
-  g_object_notify (G_OBJECT (monitor), "workarea");
+  gdk_monitor_update_workarea (GDK_MONITOR (monitor));
   gdk_monitor_set_physical_size (GDK_MONITOR (monitor),
                                  gdk_x11_screen_get_width_mm (screen),
                                  gdk_x11_screen_get_height_mm (screen));
@@ -970,7 +970,7 @@ init_randr_support (GdkScreen *screen)
   /* NB: This is also needed for XSettings, so don't remove. */
   XSelectInput (GDK_SCREEN_XDISPLAY (screen),
                 x11_screen->xroot_window,
-                StructureNotifyMask);
+                StructureNotifyMask | PropertyChangeMask);
 
 #ifdef HAVE_RANDR
   if (!GDK_X11_DISPLAY (gdk_screen_get_display (screen))->have_randr12)

@@ -87,3 +87,9 @@ headerbar.default-decoration {
                                     #282828,
                                     #1e1e1e);
 }
+
+/* Fix color of buttons for Chrome top bar */
+button.titlebutton.chromium {
+  color: #8c8c8c;
+  -gtk-icon-shadow: none;
+}

@@ -80,3 +80,10 @@ headerbar.default-decoration {
                                     #1e1e1e);
   box-shadow: none;
 }
+
+.header-bar.chromium:backdrop {
+  color: #807d78;
+  background-image: linear-gradient(to bottom,
+                                    #282828,
+                                    #1e1e1e);
+}

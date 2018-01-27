@@ -2079,7 +2079,7 @@ headerbar.default-decoration {
   color: #807d78;
   background-image: linear-gradient(to bottom, #282828, #1e1e1e); }
 
-/* Fix color of buttons for Chrome top bar */
+/* Fix color of window management buttons for Chrome top bar */
 button.titlebutton.chromium {
   color: #8c8c8c;
   -gtk-icon-shadow: none; }
@@ -2092,3 +2092,19 @@ button.titlebutton.chromium:hover {
 
 button.titlebutton.chromium:active {
   color: #787878; }
+
+/* Fix color of user button for Chrome top bar */
+.header-bar.chromium button:not(.titlebutton) {
+  border: none;
+  box-shadow: none;
+  background-image: none; }
+
+.header-bar.chromium button:not(.titlebutton):hover {
+  border: none;
+  box-shadow: none;
+  background-color: rgba(78, 78, 78, 0.8); }
+
+.header-bar.chromium button:not(.titlebutton):active {
+  border: none;
+  box-shadow: none;
+  background-color: rgba(0, 0, 0, 0.3); }

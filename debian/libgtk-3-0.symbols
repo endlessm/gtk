@@ -487,6 +487,8 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  (arch=linux-any)gdk_wayland_display_get_type@Base 3.9.10
  (arch=linux-any)gdk_wayland_display_get_wl_compositor@Base 3.9.10
  (arch=linux-any)gdk_wayland_display_get_wl_display@Base 3.9.10
+ (arch=linux-any)gdk_wayland_display_prefers_ssd@Base 3.22.25
+ (arch=linux-any)gdk_wayland_display_query_registry@Base 3.22.29
  (arch=linux-any)gdk_wayland_display_set_cursor_theme@Base 3.9.10
  (arch=linux-any)gdk_wayland_display_set_startup_notification_id@Base 3.22.4
  (arch=linux-any)gdk_wayland_gl_context_get_type@Base 3.16.2
@@ -495,6 +497,7 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  (arch=linux-any)gdk_wayland_seat_get_wl_seat@Base 3.19.12
  (arch=linux-any)gdk_wayland_selection_add_targets_libgtk_only@Base 3.13.8
  (arch=linux-any)gdk_wayland_selection_clear_targets_libgtk_only@Base 3.13.8
+ (arch=linux-any)gdk_wayland_window_announce_csd@Base 3.22.25
  (arch=linux-any)gdk_wayland_window_export_handle@Base 3.21.5
  (arch=linux-any)gdk_wayland_window_get_type@Base 3.9.10
  (arch=linux-any)gdk_wayland_window_get_wl_surface@Base 3.9.10
@@ -1929,6 +1932,7 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_flow_box_child_new@Base 3.11.5
  gtk_flow_box_get_activate_on_single_click@Base 3.11.5
  gtk_flow_box_get_child_at_index@Base 3.11.5
+ gtk_flow_box_get_child_at_pos@Base 3.22.6
  gtk_flow_box_get_column_spacing@Base 3.11.5
  gtk_flow_box_get_homogeneous@Base 3.11.5
  gtk_flow_box_get_max_children_per_line@Base 3.11.5
@@ -2435,6 +2439,7 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_info_bar_get_action_area@Base 3.0.0
  gtk_info_bar_get_content_area@Base 3.0.0
  gtk_info_bar_get_message_type@Base 3.0.0
+ gtk_info_bar_get_revealed@Base 3.22.29
  gtk_info_bar_get_show_close_button@Base 3.9.10
  gtk_info_bar_get_type@Base 3.0.0
  gtk_info_bar_new@Base 3.0.0
@@ -2443,6 +2448,7 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_info_bar_set_default_response@Base 3.0.0
  gtk_info_bar_set_message_type@Base 3.0.0
  gtk_info_bar_set_response_sensitive@Base 3.0.0
+ gtk_info_bar_set_revealed@Base 3.22.29
  gtk_info_bar_set_show_close_button@Base 3.9.10
  gtk_init@Base 3.0.0
  gtk_init_check@Base 3.0.0
@@ -2959,6 +2965,7 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_places_sidebar_get_show_enter_location@Base 3.13.7
  gtk_places_sidebar_get_show_other_locations@Base 3.17.9
  gtk_places_sidebar_get_show_recent@Base 3.17.9
+ gtk_places_sidebar_get_show_starred_location@Base 3.22.26
  gtk_places_sidebar_get_show_trash@Base 3.17.9
  gtk_places_sidebar_get_type@Base 3.9.10
  gtk_places_sidebar_list_shortcuts@Base 3.9.10
@@ -2973,6 +2980,7 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_places_sidebar_set_show_enter_location@Base 3.13.7
  gtk_places_sidebar_set_show_other_locations@Base 3.17.9
  gtk_places_sidebar_set_show_recent@Base 3.17.9
+ gtk_places_sidebar_set_show_starred_location@Base 3.22.26
  gtk_places_sidebar_set_show_trash@Base 3.17.9
  gtk_plug_construct@Base 3.0.0
  gtk_plug_construct_for_display@Base 3.0.0

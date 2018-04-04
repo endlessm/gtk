@@ -1,6 +1,8 @@
 ## Makefile.am for gtk+/tests
 include $(top_srcdir)/Makefile.decl
 
+CLEANFILES =
+
 SUBDIRS = visuals
 
 AM_CPPFLAGS =				\
@@ -308,6 +310,13 @@ testtitlebar_DEPENDENCIES = $(TEST_DEPS)
 testwindowsize_DEPENDENCIES = $(TEST_DEPS)
 listmodel_DEPENDENCIES = $(TEST_DEPS)
 
+# Add the blur files in BUILT_SOURCES instead of in blur_performance_SOURCES
+# directly because we want them to be generated before build time.
+BUILT_SOURCES = \
+	gtkcairoblurprivate.h 	\
+	gtkcairoblur.c
+
+
 animated_resizing_SOURCES = 	\
 	animated-resizing.c	\
 	frame-stats.c		\
@@ -331,7 +340,7 @@ scrolling_performance_SOURCES = \
 
 blur_performance_SOURCES = \
 	blur-performance.c	\
-	../gtk/gtkcairoblur.c
+	$(BUILT_SOURCES)
 
 video_timer_SOURCES = 	\
 	video-timer.c	\
@@ -574,5 +583,13 @@ EXTRA_DIST += 			\
 	mydialog2.ui		\
 	popover.ui		\
 	selectionmode.ui
+
+gtkcairoblurprivate.h: $(top_srcdir)/gtk/gtkcairoblurprivate.h
+	$(AM_V_GEN) $(LN_S) $^ $@
+
+gtkcairoblur.c: $(top_srcdir)/gtk/gtkcairoblur.c
+	$(AM_V_GEN) $(LN_S) $^ $@
+
+CLEANFILES += gtkcairoblurprivate.h gtkcairoblur.c
 
 -include $(top_srcdir)/git.mk

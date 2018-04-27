@@ -6,6 +6,14 @@ include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
 include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
 include /usr/share/dpkg/default.mk
 
+# Make debhelper skip the udeb package since it has no use for Endless
+# and somehow makes the armhf build succeed. DH_OPTIONS is normally not
+# suggested, but it has the advantage that both dh and all the dh_*
+# programs will respect it.
+#
+# https://phabricator.endlessm.com/T22286
+export DH_OPTIONS = -N$(UDEB_PKG)
+
 binaries := $(shell dh_listpackages)
 
 # Ensure the build aborts when there are still references to undefined symbols

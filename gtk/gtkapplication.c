@@ -327,9 +327,26 @@ gtk_application_local_command_line (GApplication   *application,
                                     gchar        ***arguments,
                                     gint           *exit_status)
 {
-  g_application_add_option_group (application, gtk_get_option_group (FALSE));
+  gboolean result;
 
-  return G_APPLICATION_CLASS (gtk_application_parent_class)->local_command_line (application, arguments, exit_status);
+  g_application_add_option_group (application, gtk_get_option_group (FALSE));
+  result = G_APPLICATION_CLASS (gtk_application_parent_class)->local_command_line (application, arguments, exit_status);
+
+  /* At this point we should know whether the application is registered
+   * as a remote one, in which case we need to make sure that the startup
+   * notification sequence gets completed, if needed, before handing things
+   * over to the primary instance and quitting.
+   */
+  if (g_application_get_is_registered (application) && g_application_get_is_remote (application))
+    {
+      GdkDisplay *display;
+
+      display = gdk_display_get_default ();
+      if (display)
+        gdk_display_notify_startup_complete (display, NULL);
+    }
+
+  return result;
 }
 
 static void

@@ -341,6 +341,8 @@ static void
 gtk_application_add_platform_data (GApplication    *application,
                                    GVariantBuilder *builder)
 {
+  GdkDisplay *display;
+
   /* This is slightly evil.
    *
    * We don't have an impl here because we're remote so we can't figure
@@ -348,11 +350,16 @@ gtk_application_add_platform_data (GApplication    *application,
    *
    * So we do all the things... which currently is just one thing.
    */
-  const gchar *desktop_startup_id =
-    GDK_PRIVATE_CALL (gdk_get_desktop_startup_id) ();
-  if (desktop_startup_id)
-    g_variant_builder_add (builder, "{sv}", "desktop-startup-id",
-                           g_variant_new_string (desktop_startup_id));
+  display = gdk_display_get_default ();
+  if (display)
+    {
+      const gchar *startup_id;
+
+      startup_id = gdk_display_get_startup_notification_id (display);
+      if (startup_id && g_utf8_validate (startup_id, -1, NULL))
+        g_variant_builder_add (builder, "{sv}", "desktop-startup-id",
+                               g_variant_new_string (startup_id));
+    }
 }
 
 static void

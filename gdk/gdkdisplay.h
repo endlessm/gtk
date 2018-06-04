@@ -166,6 +166,8 @@ gboolean gdk_display_supports_composite        (GdkDisplay    *display);
 GDK_AVAILABLE_IN_ALL
 void     gdk_display_notify_startup_complete   (GdkDisplay    *display,
                                                 const gchar   *startup_id);
+GDK_AVAILABLE_IN_3_22
+const gchar * gdk_display_get_startup_notification_id (GdkDisplay *display);
 
 GDK_DEPRECATED_IN_3_20_FOR(gdk_display_get_default_seat)
 GdkDeviceManager * gdk_display_get_device_manager (GdkDisplay *display);

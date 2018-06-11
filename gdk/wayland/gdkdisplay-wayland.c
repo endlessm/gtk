@@ -49,6 +49,8 @@
 #include "xdg-foreign-unstable-v1-client-protocol.h"
 #include "server-decoration-client-protocol.h"
 
+#include "gdk/gdk-private.h"
+
 /**
  * SECTION:wayland_interaction
  * @Short_description: Wayland backend-specific functions

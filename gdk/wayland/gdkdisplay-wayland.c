@@ -48,6 +48,8 @@
 #include "xdg-foreign-unstable-v1-client-protocol.h"
 #include "server-decoration-client-protocol.h"
 
+#include "gdk/gdk-private.h"
+
 /**
  * SECTION:wayland_interaction
  * @Short_description: Wayland backend-specific functions
@@ -805,19 +807,9 @@ gdk_wayland_display_make_default (GdkDisplay *display)
   g_free (display_wayland->startup_notification_id);
   display_wayland->startup_notification_id = NULL;
 
-  startup_id = g_getenv ("DESKTOP_STARTUP_ID");
-  if (startup_id && *startup_id != '\0')
-    {
-      if (!g_utf8_validate (startup_id, -1, NULL))
-        g_warning ("DESKTOP_STARTUP_ID contains invalid UTF-8");
-      else
-        display_wayland->startup_notification_id = g_strdup (startup_id);
-
-      /* Clear the environment variable so it won't be inherited by
-       * child processes and confuse things.
-       */
-      g_unsetenv ("DESKTOP_STARTUP_ID");
-    }
+  startup_id = GDK_PRIVATE_CALL (gdk_get_startup_notification_id ());
+  if (startup_id)
+    display_wayland->startup_notification_id = g_strdup (startup_id);
 }
 
 static gboolean
@@ -898,6 +890,23 @@ gdk_wayland_display_get_next_serial (GdkDisplay *display)
 {
   static gulong serial = 0;
   return ++serial;
+}
+
+/**
+ * gdk_wayland_display_get_startup_notification_id:
+ * @display: (type GdkX11Display): a #GdkDisplay
+ *
+ * Gets the startup notification ID for a Wayland display, or %NULL
+ * if no ID has been defined.
+ *
+ * Returns: the startup notification ID for @display, or %NULL
+ *
+ * Since: 3.22
+ */
+const gchar *
+gdk_wayland_display_get_startup_notification_id (GdkDisplay  *display)
+{
+  return GDK_WAYLAND_DISPLAY (display)->startup_notification_id;
 }
 
 /**
@@ -1066,6 +1075,7 @@ gdk_wayland_display_class_init (GdkWaylandDisplayClass *class)
   display_class->before_process_all_updates = gdk_wayland_display_before_process_all_updates;
   display_class->after_process_all_updates = gdk_wayland_display_after_process_all_updates;
   display_class->get_next_serial = gdk_wayland_display_get_next_serial;
+  display_class->get_startup_notification_id = gdk_wayland_display_get_startup_notification_id;
   display_class->notify_startup_complete = gdk_wayland_display_notify_startup_complete;
   display_class->create_window_impl = _gdk_wayland_display_create_window_impl;
   display_class->get_keymap = _gdk_wayland_display_get_keymap;

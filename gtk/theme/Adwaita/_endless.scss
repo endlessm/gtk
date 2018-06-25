@@ -66,13 +66,6 @@ headerbar.default-decoration {
   }
 }
 
-/* Shadow beneath the top bar */
-.mutter-topbar-shadow {
-  border-width: 2px;
-  border-style: solid;
-  border-color: transparentize(black, 0.15);
-}
-
 /* Set dark background for Chrome and Chromium > 59 top bar */
 .header-bar.chromium {
   background-image: linear-gradient(to bottom,

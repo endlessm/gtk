@@ -68,6 +68,7 @@ headerbar.default-decoration {
 
 /* Set dark background for Chrome and Chromium > 59 top bar */
 .header-bar.chromium {
+  color: #807d78;
   background-image: linear-gradient(to bottom,
                                     #464646,
                                     #1e1e1e);

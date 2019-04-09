@@ -1,3 +1,325 @@
+gtk+3.0 (3.24.7-1) experimental; urgency=medium
+
+  * New upstream release
+    + Broadway: Ensure focus on click
+    + Fix some compiler warnings
+    + Improve activation of the onscreen keyboard
+    + Improve menu positioning with move-to-rect
+    + Link against fribidi
+    + Treeview: Make sure separator nodes have height > 0
+    + Use C locale when generating code
+    + theme
+      - Fix some inconsistences for radii
+  * control: BD and D (from libgtk-3-dev) on fribidi as required now
+  * Refresh patches & drop upstream ones.
+     debian/patches/Revert-Update-a11y-test-output.patch,
+     debian/patches/Update-css-node-tests.patch: Dropped, now upstream.
+  * control: BD on fonts-cantarell and fonts-dejavu. These are required for
+    the reftests. Liberation doesn't work (label-shadows fails).
+  * debian/libgtk-3-0.symbols: Update
+
+ -- Iain Lane <laney@debian.org>  Wed, 13 Mar 2019 16:39:58 +0000
+
+gtk+3.0 (3.24.5-1) unstable; urgency=medium
+
+  * New upstream release
+    - Includes refreshed Adwaita and High Contrast themes
+  * Cherry-pick Update-css-node-tests.patch:
+    - Update test for GtkSwitch changes
+
+ -- Jeremy Bicha <jbicha@debian.org>  Tue, 05 Feb 2019 12:02:24 -0500
+
+gtk+3.0 (3.24.4-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 21 Jan 2019 12:00:53 -0500
+
+gtk+3.0 (3.24.3-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/libgtk-3-0.symbols: Add new symbol
+  * Add -Wl,-O1 -Wl,--as-needed to our LDFLAGS
+  * Enable all hardening flags
+  * Drop patches applied in new release:
+    - Revert-Fix-deprecation-warnings.patch
+    - x11-Fix-deprecation-macro-use.patch
+  * Add Revert-Update-a11-test-output.patch:
+    - Revert another late change that broke our build tests
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 14 Jan 2019 14:03:05 -0500
+
+gtk+3.0 (3.24.2-3) unstable; urgency=medium
+
+  * Cherry-pick x11-Fix-deprecation-macro-use.patch:
+    - Fix deprecation macro use to fix crashes seen on Xfce
+
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 13 Dec 2018 12:55:00 -0500
+
+gtk+3.0 (3.24.2-2) unstable; urgency=medium
+
+  * Add Revert-update-some-a11y-test-results.patch:
+    - Revert a late change that broke our build tests
+  * Use xvfb-run for build tests
+
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 13 Dec 2018 08:41:15 -0500
+
+gtk+3.0 (3.24.2-1) unstable; urgency=medium
+
+  * New upstream release (LP: #1808233)
+    - Fix tooltip flickering regression in Xfce (Closes: #911148) (LP: #1798861)
+  * Drop patches applied in new release:
+    - wayland-Avoid-crashes-inside-wl_proxy_marshal.patch
+    - Force-emoji-presentation.patch
+    - emojichooser-Pass-chooser-to-add_emoji.patch
+  * Cherry-pick Revert-Fix-deprecation-warnings.patch:
+    - Fix typo that broke the build
+  * debian/libgtk-3-0.symbols: Add new symbol
+
+ -- Jeremy Bicha <jbicha@debian.org>  Wed, 12 Dec 2018 23:19:44 -0500
+
+gtk+3.0 (3.24.1-3) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * d/p/wayland-Avoid-crashes-inside-wl_proxy_marshal.patch:
+    Add patch from upstream (via Ubuntu) to fix a segfault under Wayland
+
+  [ Jeremy Bicha ]
+  * Stop using gnome-get-source
+  * Update debian/gbp.conf
+  * Cherry-pick Force-emoji-presentation.patch:
+    - Ensure that all emoji from the emoji chooser use emoji presentation
+      instead of the black-and-white text presentation (LP: #1807719)
+  * Cherry-pick emojichooser-Pass-chooser-to-add_emoji.patch:
+    - Fix variant selector in emoji chooser (LP: #1807721)
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 10 Dec 2018 12:27:10 -0500
+
+gtk+3.0 (3.24.1-2) unstable; urgency=medium
+
+  * Team upload
+  * Upload to unstable
+  * d/libgtk-3-0.symbols: Mark gdk_wayland_window_announce_ssd() as
+    Linux-specific, since we do not enable Wayland on non-Linux.
+    This might fix FTBFS on kfreebsd-any.
+  * d/rules: Generate files from .in counterparts for every package,
+    not just the ones we are going to build. This avoids dh_missing
+    false positives for files that would have gone into packages not
+    included in the current build, for example libgtk-3-common during
+    an amd64-only build.
+  * d/tests: Also mark reftests as flaky due to a known failure:
+    symbolic-icon-translucent-color appears to have regressed and now
+    differs from the reference by 1 column of pixels
+  * Revert "Temporarily (B-)D on libgl1-mesa-dev and libegl1-mesa-dev"
+    now that libepoxy has been fixed
+  * d/p/reftest-known-fail.patch: Reinstate
+  * Make symbolic-icon-translucent-color.ui non-fatal during
+    build-time tests
+
+ -- Simon McVittie <smcv@debian.org>  Sun, 30 Sep 2018 16:45:24 +0100
+
+gtk+3.0 (3.24.1-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream release
+    - Bump GLib build-dependency to 2.53.4 as per configure.ac
+    - d/p/Revert-imwayland-clear-preedit-on-focus-out.patch:
+      Remove, rely on the upstream fix for #908120 instead
+    - d/p/GtkApplication-Fix-CRITICAL-on-shutdown-when-register_ses.patch,
+      d/p/Fix-portal-path-handling.patch: Remove, applied upstream
+  * Build installed-tests
+    - Install them in gtk-3-examples for now to avoid the NEW queue
+  * d/p/no-accessibility-dump.patch: Drop, no longer needed.
+    The build-time tests correctly set GTK_CSD=1 now.
+  * Stop marking some reftests as known failures. They now succeed on
+    all release architectures.
+    - d/p/reftest-known-fail.patch: Drop, no longer needed
+  * Run installed-tests as autopkgtests (Closes: #908440)
+    - Run a11ystate.test separately and mark it as flaky for now due to a
+      known failure: state/focus1.ui passes in a desktop session but fails
+      in a minimal autopkgtest VM
+  * Sort dependency lists (wrap-and-sort -a)
+  * d/gtk-3-examples.install: Sort file list (wrap-and-sort -a)
+  * Use the same Xvfb screen configuration as in the upstream GTK+ 4
+    Gitlab-CI tests. This will hopefully make GLX work (see also #874077)
+  * Update d/gbp.conf from glib2.0
+  * Temporarily (Build-)Depend on libgl1-mesa-dev and libegl1-mesa-dev to
+    work around #909173 in libepoxy
+  * d/rules: Make it clearer that we respect the nocheck option
+  * d/copyright: Fix some lintian warnings
+  * Upload to experimental for now, to avoid disrupting migration
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 19 Sep 2018 23:35:29 +0100
+
+gtk+3.0 (3.24.0-3) unstable; urgency=medium
+
+  * Cherry-pick 3c7d5e7 to fix a critical on gtk_application_shutdown when not
+    using portals (Closes: #908070)
+  * Add Applied-Upstream to last cherry-pick
+  * Fix-portal-path-handling.patch: Cherry-pick from upstream.  Fix an
+    incorrect dereference in the portal handling code.
+
+ -- Iain Lane <laney@debian.org>  Tue, 11 Sep 2018 17:33:38 +0100
+
+gtk+3.0 (3.24.0-2) unstable; urgency=medium
+
+  * Team upload
+  * d/p/Revert-imwayland-clear-preedit-on-focus-out.patch:
+    Revert an upstream change that caused the cursor to disappear on
+    focus changes in vte terminals like gnome-terminal and lxterminal
+    under Wayland (Closes: #908120)
+  * debian/libgtk-3-0.symbols: gtk_color_picker_kwin_new() is new in
+    3.24.0, not 3.24.3 which doesn't exist yet
+  * d/p/Don-t-test-default-constructed-GdkPixbuf-properties.patch:
+    Work around a gdk-pixbuf bug that caused test failures
+    (Closes: #908439)
+  * d/gbp.conf: Don't number patches
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 10 Sep 2018 01:15:53 +0100
+
+gtk+3.0 (3.24.0-1) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * debian/libgtk-3-0.bug-control:
+    When bugs are reported against GTK+, include details of various
+    engines, modules and LD_PRELOADs if installed
+  * Don't install ChangeLog, which currently just says
+    "A git checkout and git-log is required to generate this file";
+    even if it was complete, Policy 4.2.0 does not require detailed
+    changelogs to be installed. Please see NEWS for a summary of changes,
+    or the upstream git repository https://gitlab.gnome.org/GNOME/gtk
+    for a comprehensive change history.
+
+  [ Iain Lane ]
+  * Revert "debian/{control{,.in},gbp.conf,watch}: Update for experimental"
+    This reverts commit 99b78e089c952661fcf3c4897769dd7a463c5cb7.
+  * New upstream stable release 3.24.0
+    + GtkApplication can now track screensaver state
+    + Deprecate a few APIs that are gone in GTK+ 4:
+       - focus chains in GtkContainer
+       - stepper sensitivity in GtkRange
+    + Allow picking colors under kwin
+  * debian/control{,.in}: Bump Standards-Version to 4.2.1, no changes required
+  * debian/libgtk-3-0.symbols: Update for this release
+
+ -- Iain Lane <laney@debian.org>  Tue, 04 Sep 2018 18:10:53 +0100
+
+gtk+3.0 (3.23.2-1) experimental; urgency=medium
+
+  [ Andrea Azzarone ]
+  * New upstream release
+  * debian/patches/0008-defaultvalue-Ignore-more-style-properties-that-Adwai.patch:
+    Drop, included in this release.
+  * debian/libgtk-3-0.symbols: New symbols for this release
+
+  [ Iain Lane ]
+  * Stanrdards-Version → 4.2.0 - no changes required.
+
+ -- Andrea Azzarone <andrea.azzarone@canonical.com>  Thu, 09 Aug 2018 14:11:12 +0000
+
+gtk+3.0 (3.23.1-1) experimental; urgency=medium
+
+  * debian/{control{,.in},gbp.conf,watch}: Update for experimental
+  * New upstream development releases (!!!) 3.23.0 & 3.23.1:
+    + New font chooser features:
+     - Allow setting OpenType font features
+     - Show examples for OpenType font features
+     - Allow selecting OpenType font variations
+     - Support levels of details for selection
+    + New Emoji features:
+     - Support a completion popup for Emoji
+     - Drop Ctrl-Shift-e shortcut
+    + Other new apis:
+     - gdk_window_move_to_rect
+    + Backported event controllers from GTK+ 4:
+     - GtkEventControllerScroll
+     - GtkEventControllerMotion
+     - GtkEventControllerKey
+     - GtkGestureStylus
+    + Support markup in GtkModelButtons
+    + Themes
+     - The Raleigh theme has been removed
+     - Expander size in HighContrast has been increased
+    + Wayland
+     - Update cursor scale when needed
+     - Decoration negotiation protocol fixes
+  * debian/patches/m4macros-Set-a-serial-number.patch: Drop, included in this
+    release.
+  * debian/control{,.in}: Bump libepoxy (1.4) and pango (1.41.0) per upstream.
+  * debian/patches/gdk-x11-Check-if-we-have-access-to-GL-before-using-G.patch:
+    Drop - GTK now calls epoxy_has_glx() directly so this bypassed approach
+    isn't necessary.
+  * debian/libgail-3-0.symbols: New symbols from both releases.
+  * debian/patches/0008-defaultvalue-Ignore-more-style-properties-that-Adwai.patch:
+    Cherry-pick test fix patch from upstream !253.
+
+ -- Iain Lane <laney@debian.org>  Thu, 19 Jul 2018 17:55:42 +0100
+
+gtk+3.0 (3.22.30-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Jeremy Bicha ]
+  * Bump minimum wayland-protocols to 1.12
+
+  [ Simon McVittie ]
+  * d/p/m4macros-Set-a-serial-number.patch:
+    Add patch from upstream to give gtk-3.0.m4 a serial number so that
+    it will override older copies bundled with other packages, typically
+    in the m4 directory (GTK+ 3 version of #895018)
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 27 Jun 2018 09:55:28 +0100
+
+gtk+3.0 (3.22.30-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * New upstream release
+  * Drop patches applied in new release (numbered 0009-0016)
+
+  [ Simon McVittie ]
+  * d/p/022_disable-viqr-im-for-vi-locale.patch:
+    Add reference to Ubuntu bug 191451, summarize the reason why this
+    is applied, and correctly attribute the patch to Ming Hua
+    (see #895043)
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 16 Apr 2018 19:55:32 -0400
+
+gtk+3.0 (3.22.29-3) unstable; urgency=medium
+
+  * Team upload
+  * Allow stderr in autopkgtests. They produce harmless diagnostics.
+  * d/p/0013-wayland-Drop-cairo-surfaces-when-withdrawing.patch:
+    Add patch from upstream fixing a Wayland client crash if it unmaps
+    a window while gdk is processing updates
+  * d/p/0014-AM_PATH_GTK_3_0-Use-AC_PATH_TOOL-to-find-pkg-config.patch,
+    d/p/0015-m4macros-Fix-underquoting-in-AC_PATH_TOOL.patch:
+    Use AC_PATH_TOOL to find pkg-config in the deprecated AM_PATH_GTK_3_0
+    macro (Closes: #894069)
+  * d/p/0016-imwayland-destroy-objects-only-if-it-matches-our-man.patch:
+    Add patch proposed upstream to fix crashes on screen blank in some
+    dual-monitor configurations (Closes: #894388)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 03 Apr 2018 08:41:09 +0100
+
+gtk+3.0 (3.22.29-2) unstable; urgency=medium
+
+  * Team upload
+  * Refresh patch series through gbp-pq
+    - Harvest date and authorship information from debian/changelog
+  * Add more upstream status information to the patch series
+  * d/p/0009-gtkimmodule-make-match_backend-query-the-wayland-reg.patch,
+    d/p/0010-imwayland-Avoid-TOGGLE_INPUT_PANEL-requests-if-there.patch:
+    Add patches from upstream fixing Wayland client crashes under
+    unspecified circumstances (Closes: #893696)
+  * d/p/0011-gtkstylecontext-guard-against-gtk_css_widget_node_ge.patch:
+    Add patch from upstream fixing a NULL dereference
+  * d/p/0012-widget-Only-print-allocation-warnings-with-enable-de.patch:
+    Add patch from upstream silencing allocation warnings for stable
+    branches (if there is ever a GTK+ 3.23 then these warnings would
+    come back until 3.24). (Closes: #867427)
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 22 Mar 2018 10:15:24 +0000
+
 gtk+3.0 (3.22.29-1) unstable; urgency=medium
 
   * New upstream release
@@ -260,12 +582,6 @@ gtk+3.0 (3.22.5-1) unstable; urgency=medium
   * New upstream release.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 10 Dec 2016 17:00:03 +0100
-
-gtk+3.0 (3.22.4-0) master; urgency=medium
-
-  * Endless release. We are forcing a lower version for jenkins.
-
- -- Philip Chimento <philip@endlessm.com>  Thu, 01 Dec 2016 13:59:09 -0800
 
 gtk+3.0 (3.22.4-1) unstable; urgency=medium
 
@@ -4979,4 +5295,3 @@ gtk+2.0 (2.0.0-1) unstable; urgency=low
   * Initial Release.
 
  -- Akira TAGOH <tagoh@debian.org>  Wed, 13 Mar 2002 00:07:25 +0900
-

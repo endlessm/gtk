@@ -133,7 +133,6 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  gdk_display_get_pointer@Base 3.0.0
  gdk_display_get_primary_monitor@Base 3.21.4
  gdk_display_get_screen@Base 3.0.0
- gdk_display_get_startup_notification_id@Base 3.22.29
  gdk_display_get_type@Base 3.0.0
  gdk_display_get_window_at_pointer@Base 3.0.0
  gdk_display_has_pending@Base 3.0.0
@@ -493,13 +492,13 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  (arch=linux-any)gdk_wayland_display_set_cursor_theme@Base 3.9.10
  (arch=linux-any)gdk_wayland_display_set_startup_notification_id@Base 3.22.4
  (arch=linux-any)gdk_wayland_gl_context_get_type@Base 3.16.2
- (arch=linux-any)gdk_wayland_display_get_startup_notification_id@Base 3.22.29
  (arch=linux-any)gdk_wayland_monitor_get_type@Base 3.21.4
  (arch=linux-any)gdk_wayland_monitor_get_wl_output@Base 3.21.4
  (arch=linux-any)gdk_wayland_seat_get_wl_seat@Base 3.19.12
  (arch=linux-any)gdk_wayland_selection_add_targets_libgtk_only@Base 3.13.8
  (arch=linux-any)gdk_wayland_selection_clear_targets_libgtk_only@Base 3.13.8
  (arch=linux-any)gdk_wayland_window_announce_csd@Base 3.22.25
+ (arch=linux-any)gdk_wayland_window_announce_ssd@Base 3.23.1
  (arch=linux-any)gdk_wayland_window_export_handle@Base 3.21.5
  (arch=linux-any)gdk_wayland_window_get_type@Base 3.9.10
  (arch=linux-any)gdk_wayland_window_get_wl_surface@Base 3.9.10
@@ -608,6 +607,7 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  gdk_window_move@Base 3.0.0
  gdk_window_move_region@Base 3.0.0
  gdk_window_move_resize@Base 3.0.0
+ gdk_window_move_to_rect@Base 3.23.0
  gdk_window_new@Base 3.0.0
  gdk_window_peek_children@Base 3.0.0
  gdk_window_process_all_updates@Base 3.0.0
@@ -714,6 +714,7 @@ libgdk-3.so.0 libgtk-3-0 #MINVER#
  gdk_x11_get_default_root_xwindow@Base 3.0.0
  gdk_x11_get_default_screen@Base 3.0.0
  gdk_x11_get_default_xdisplay@Base 3.0.0
+ gdk_x11_get_parent_relative_pattern@Base 3.24.2
  gdk_x11_get_server_time@Base 3.0.0
  gdk_x11_get_xatom_by_name@Base 3.0.0
  gdk_x11_get_xatom_by_name_for_display@Base 3.0.0
@@ -1204,8 +1205,11 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_cell_accessible_parent_expand_collapse@Base 3.7.10
  gtk_cell_accessible_parent_get_cell_area@Base 3.7.10
  gtk_cell_accessible_parent_get_cell_extents@Base 3.7.10
+ gtk_cell_accessible_parent_get_cell_position@Base 3.24.3
  gtk_cell_accessible_parent_get_child_index@Base 3.7.10
+ gtk_cell_accessible_parent_get_column_header_cells@Base 3.24.7
  gtk_cell_accessible_parent_get_renderer_state@Base 3.7.10
+ gtk_cell_accessible_parent_get_row_header_cells@Base 3.24.7
  gtk_cell_accessible_parent_get_type@Base 3.7.10
  gtk_cell_accessible_parent_grab_focus@Base 3.7.10
  gtk_cell_accessible_parent_update_relationset@Base 3.12.0
@@ -1432,6 +1436,13 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_color_chooser_set_use_alpha@Base 3.3.16
  gtk_color_chooser_widget_get_type@Base 3.3.16
  gtk_color_chooser_widget_new@Base 3.3.16
+ gtk_color_picker_get_type@Base 3.23.2
+ gtk_color_picker_kwin_new@Base 3.24.0
+ gtk_color_picker_new@Base 3.23.2
+ gtk_color_picker_pick@Base 3.23.2
+ gtk_color_picker_pick_finish@Base 3.23.2
+ gtk_color_picker_portal_new@Base 3.23.2
+ gtk_color_picker_shell_new@Base 3.23.2
  gtk_color_selection_dialog_get_color_selection@Base 3.0.0
  gtk_color_selection_dialog_get_type@Base 3.0.0
  gtk_color_selection_dialog_new@Base 3.0.0
@@ -1794,7 +1805,20 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_event_controller_get_type@Base 3.13.7
  gtk_event_controller_get_widget@Base 3.13.7
  gtk_event_controller_handle_event@Base 3.13.7
+ gtk_event_controller_key_forward@Base 3.23.1
+ gtk_event_controller_key_get_group@Base 3.23.1
+ gtk_event_controller_key_get_im_context@Base 3.23.1
+ gtk_event_controller_key_get_type@Base 3.23.1
+ gtk_event_controller_key_new@Base 3.23.1
+ gtk_event_controller_key_set_im_context@Base 3.23.1
+ gtk_event_controller_motion_get_type@Base 3.23.1
+ gtk_event_controller_motion_new@Base 3.23.1
  gtk_event_controller_reset@Base 3.13.7
+ gtk_event_controller_scroll_flags_get_type@Base 3.23.1
+ gtk_event_controller_scroll_get_flags@Base 3.23.1
+ gtk_event_controller_scroll_get_type@Base 3.23.1
+ gtk_event_controller_scroll_new@Base 3.23.1
+ gtk_event_controller_scroll_set_flags@Base 3.23.1
  gtk_event_controller_set_propagation_phase@Base 3.13.7
  gtk_event_sequence_state_get_type@Base 3.13.7
  gtk_events_pending@Base 3.0.0
@@ -1984,15 +2008,21 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_font_chooser_get_font_desc@Base 3.2.1
  gtk_font_chooser_get_font_face@Base 3.2.1
  gtk_font_chooser_get_font_family@Base 3.2.1
+ gtk_font_chooser_get_font_features@Base 3.23.0
  gtk_font_chooser_get_font_map@Base 3.17.9
  gtk_font_chooser_get_font_size@Base 3.2.1
+ gtk_font_chooser_get_language@Base 3.23.0
+ gtk_font_chooser_get_level@Base 3.23.0
  gtk_font_chooser_get_preview_text@Base 3.2.1
  gtk_font_chooser_get_show_preview_entry@Base 3.2.1
  gtk_font_chooser_get_type@Base 3.2.1
+ gtk_font_chooser_level_get_type@Base 3.23.0
  gtk_font_chooser_set_filter_func@Base 3.2.1
  gtk_font_chooser_set_font@Base 3.2.1
  gtk_font_chooser_set_font_desc@Base 3.2.1
  gtk_font_chooser_set_font_map@Base 3.17.9
+ gtk_font_chooser_set_language@Base 3.23.0
+ gtk_font_chooser_set_level@Base 3.23.0
  gtk_font_chooser_set_preview_text@Base 3.2.1
  gtk_font_chooser_set_show_preview_entry@Base 3.2.1
  gtk_font_chooser_widget_get_type@Base 3.2.1
@@ -2076,6 +2106,11 @@ libgtk-3.so.0 libgtk-3-0 #MINVER#
  gtk_gesture_single_set_button@Base 3.13.7
  gtk_gesture_single_set_exclusive@Base 3.13.7
  gtk_gesture_single_set_touch_only@Base 3.13.7
+ gtk_gesture_stylus_get_axes@Base 3.23.1
+ gtk_gesture_stylus_get_axis@Base 3.23.1
+ gtk_gesture_stylus_get_device_tool@Base 3.23.1
+ gtk_gesture_stylus_get_type@Base 3.23.1
+ gtk_gesture_stylus_new@Base 3.23.1
  gtk_gesture_swipe_get_type@Base 3.13.7
  gtk_gesture_swipe_get_velocity@Base 3.13.7
  gtk_gesture_swipe_new@Base 3.13.7

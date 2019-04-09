@@ -44,8 +44,8 @@ Build-Depends: adwaita-icon-theme <!nocheck>,
                libxrandr-dev (>= 2:1.5.0),
                pkg-config,
                wayland-protocols (>= 1.12) [linux-any],
-               xauth <!nocheck>,
-               xvfb <!nocheck>
+               xauth,
+               xvfb
 Build-Depends-Indep: docbook-xml,
                      docbook-xsl,
                      libatk1.0-doc,

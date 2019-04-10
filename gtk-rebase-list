@@ -1,0 +1,50 @@
+pick f06af175d6 Don't let offscreen widget do grabbing
+pick a5dd9efaf0 Do not allow devices in an offscreen hierarchy to take grabs.
+pick 1946976252 Consistently treat gdkenumtypes.[hc] as source files
+pick 8873220d95 Disable VIQR IM for vi locale
+pick 72ed63a00e Don't list images from unknown directories in icon cache
+pick 40cf7c4a63 disable a11y test accessibility-dump
+pick 76afd69415 Mark known failing tests as non-fatal
+pick a2f732622e gdk/x11: Check if we have access to GL before using GLX API
+pick b18a389088 _mips_treeview_row_separator_height
+pick 4e85dec762 Remove Computer from file chooser
+$pick 97865737da theme: add Endless-specific customizations
+pick ccfd545509 Comment out VS 2011/2012 project build
+pick a659d4669f gtkwindow: add an environment variable to disable backdrop styling
+$pick 63abbc5aa4 Use EndlessOS icon theme as first fallback after checking the current theme
+pick 77c7931cda filechooserwidget: make sure it fits in screen
+pick 9469fa2e7d filechooserwidget: allow to hide the sidebar
+pick 995901bfd8 filechooserwidget: reduce location width-chars
+pick 2216d406ff filechooserwidget: use a scrolled window for filters
+pick 35891e6fad TMP: Remove broken reftests
+pick b34f3f9847 gdk/x11: Add conditional support for EGL-X11
+pick c9b12a2bdf gdk/x11: Force GLES when using EGL X11
+pick 8d16fadeaf gl: Add private glReadPixels() wrapper
+pick 2f1e958fdc Use the generic names for glFramebuffer functions
+pick eebd1ccbf6 glarea: Don't use GL_RGBA8 with OpengGL ES
+pick a73ddba203 gdk_gl_context_download_texture() convert pixel data from rgba to argb.
+$pick f29cbba682 theme: Add endless titlebar themes to gtk-contained-dark
+pick bc933941cc GdkX11GLContext: x11-eglx, implemented texture_from_surface()
+pick 9e39288523 x11: Check if the window is composited for GL frame sync
+pick ba975b7c33 Use non standard _GTK_WINDOW_UNREDIRECTED
+$pick a1270f0ca4 theme: Set dark background for Chrome and Chromium > 59 top bar
+pick 65fcec37e0 x11: listen to property changes on the root window
+pick 547a0c15c6 x11: update screen size when workarea changes
+pick 79cddb2f40 x11: only notify a new workarea when it changed
+$pick a4909276dd Chromium header bar: match default gradient
+$pick f4b9c0d20e Chromium header bar: specify backdrop gradient
+$pick 73ea976ab7 Chromium header bar: fix button color for Chrome 62
+$pick 2a9d1858d9 Chromium header bar: match default hover/pressed buttons
+$pick 0b9b8be4b1 Chromium header bar: regenerate CSS files
+$pick a762d81aca Chromium header bar: fix user button color for Chrome 64
+$pick d3b1a7c2ba Chromium header bar: regenerate CSS files
+pick fee58ffbf8 tests: Fix build with external file
+pick 502ad61c3c display: Avoid unsetting the DESKTOP_STARTUP_ID variable too late
+pick d64d9be465 display: Add new virtual gdk_display_get_startup_notification_id() method.
+pick 6fba047f45 application: Use the new API to get the startup notification ID
+pick 770ccd30fd application: Complete startup notification sequence for remote invocations
+$pick 367b35a0d1 theme: remove special theming for mutter-topbar-shadow
+$pick 5583c3b071 theme: fix text readability on unfocused Chrome/Chromium tabs
+
+                                                                                       1,2           Top
+	

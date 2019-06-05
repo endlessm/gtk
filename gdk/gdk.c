@@ -213,35 +213,6 @@ gdk_arg_no_debug_cb (const char *key, const char *value, gpointer user_data, GEr
 }
 #endif /* G_ENABLE_DEBUG */
 
-#ifdef G_HAS_CONSTRUCTORS
-#ifdef G_DEFINE_CONSTRUCTOR_NEEDS_PRAGMA
-#pragma G_DEFINE_CONSTRUCTOR_PRAGMA_ARGS(stash_desktop_startup_notification_id)
-#endif
-G_DEFINE_CONSTRUCTOR(stash_desktop_startup_notification_id)
-#endif
-
-static gchar *startup_notification_id = NULL;
-
-static void
-stash_desktop_startup_notification_id (void)
-{
-  const char *desktop_startup_id;
-
-  desktop_startup_id = g_getenv ("DESKTOP_STARTUP_ID");
-  if (desktop_startup_id && *desktop_startup_id != '\0')
-    {
-      if (!g_utf8_validate (desktop_startup_id, -1, NULL))
-        g_warning ("DESKTOP_STARTUP_ID contains invalid UTF-8");
-      else
-        startup_notification_id = g_strdup (desktop_startup_id ? desktop_startup_id : "");
-    }
-
-  /* Clear the environment variable so it won't be inherited by
-   * child processes and confuse things.
-   */
-  g_unsetenv ("DESKTOP_STARTUP_ID");
-}
-
 static gboolean
 gdk_arg_class_cb (const char *key, const char *value, gpointer user_data, GError **error)
 {
@@ -370,10 +341,6 @@ gdk_pre_parse (void)
       else if (g_str_equal (rendering_mode, "recording"))
         _gdk_rendering_mode = GDK_RENDERING_MODE_RECORDING;
     }
-
-#ifndef G_HAS_CONSTRUCTORS
-  stash_desktop_startup_notification_id ();
-#endif
 }
 
 /**
@@ -436,22 +403,6 @@ gdk_parse_args (int    *argc,
   g_option_context_free (option_context);
 
   GDK_NOTE (MISC, g_message ("progname: \"%s\"", g_get_prgname ()));
-}
-
-/*< private >
- *
- * gdk_get_startup_notification_id
- *
- * Returns the original value of the DESKTOP_STARTUP_ID environment
- * variable if it was defined and valid, or %NULL otherwise.
- *
- * Returns: (nullable) (transfer none): the original value of the
- *   DESKTOP_STARTUP_ID environment variable, or %NULL.
- */
-const gchar *
-gdk_get_startup_notification_id (void)
-{
-  return startup_notification_id;
 }
 
 /**

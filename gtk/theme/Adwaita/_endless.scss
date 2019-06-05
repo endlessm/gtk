@@ -45,6 +45,7 @@ headerbar.default-decoration {
       box-shadow: none;
       background-color: transparent;
       border-radius: 2px;
+      -gtk-icon-shadow: none;
 
       &:hover {
         color: #dcdcdc;

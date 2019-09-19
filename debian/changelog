@@ -1,3 +1,14 @@
+gtk+3.0 (3.24.11-1endless0) UNRELEASED; urgency=medium
+
+  * Update to Debian's 3.24.11-1. https://phabricator.endlessm.com/T27556
+  * Reapply existing downstream patches:
+    * Move gtk-encode-symbolic-svg to gtk-3-bin for backwards compatibility
+    * Enable EGL X11 on ARM builds
+    * Don't build udeb package
+    * Add startup notification ID API to symbols file
+
+ -- Philip Chimento <philip@endlessm.com>  Thu, 19 Sep 2019 16:17:41 -0700
+
 gtk+3.0 (3.24.11-1) unstable; urgency=medium
 
   [ Simon McVittie ]

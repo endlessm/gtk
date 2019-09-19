@@ -2,6 +2,8 @@
 
 xvfb-run -a -s "-screen 0 1024x768x24" \
 python3 <<EOF
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk
 
 def do_quit(user_data):

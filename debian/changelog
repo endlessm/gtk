@@ -1,3 +1,85 @@
+gtk+3.0 (3.24.11-1) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * d/p/018_gdkenumtypes.c_location.patch:
+    Drop patch that was rejected upstream
+  * d/p/gdk-Generate-gdkenumtypes.-ch-in-the-builddir.patch:
+    Drop patch that partially reverted the one described above
+  * d/p/gdk-Don-t-distribute-generated-files-in-tarballs.patch,
+    d/p/gtk-Really-don-t-distribute-built-files.patch,
+    d/p/demos-examples-tests-Don-t-distribute-built-files.patch:
+    Replace patches above with an upstreamable version
+  * Use debhelper-compat 12
+    - Don't explicitly use dh_makeshlibs -V, it is now the default
+    - Don't explicitly use --libexecdir=/usr/libexec, it is now the default
+    - Don't try to use dh_missing on debian/install/udeb if we didn't do
+      the udeb build
+  * API documentation:
+    - Install documentation in /usr/share/gtk-doc, with symlinks in /u/s/doc.
+      gtk-doc documentation is technically a functional interface
+      (Policy §12.3), because other packages can build-depend on it and
+      use it to fix cross-references.
+    - Install symlinks to gtk-doc in both /usr/share/doc/libgtk-3-doc
+      (traditional location) and /usr/share/doc/libgtk-3-dev ("main package"
+      for developer documentation, as recommended in Policy §12.3)
+  * Refer to GTK rather than GTK+ in packaging files.
+    The library was renamed in February 2019.
+
+  [ Iain Lane ]
+  * New upstream release
+    + Adwaita:
+      - Add drop shadow to icons
+      - Small color fixes
+      - Make title buttons round
+    + Wayland:
+      - Support xdg-output v3
+      - Fix clipboard ownership handling
+    + X11: Improve monitor metadata
+    + Build: Require GLib 2.57.2
+  * d/control: Bump Build-Depends and -dev Depends according to configure.ac
+    - libglib2.0-dev → 2.57.4
+    - wayland-protocols → 1.14
+  * d/p/Fix-a-string-leak.patch,
+    d/p/docs-Add-gtk_file_chooser_add_choice-and-related-function.patch: Drop
+    patches which have been applied upstream
+  * debian/libgtk-3-0.symbols: Add gtk_header_bar_accessible_get_type
+
+ -- Iain Lane <laney@debian.org>  Wed, 04 Sep 2019 17:32:22 +0100
+
+gtk+3.0 (3.24.10-1) unstable; urgency=medium
+
+  * Team upload
+  * Upload to unstable
+  * New upstream release
+    - Bump required CUPS version to 1.7
+    - d/copyright: Update
+    - d/rules: Explicitly select Autotools build system.
+      Upstream now partially supports Meson, but it doesn't have all the
+      features we want yet (in particular no installed-tests).
+  * d/rules: Delete more generated files in clean to force them to be
+    regenerated
+    - d/p/gdk-Generate-gdkenumtypes.-ch-in-the-builddir.patch,
+      d/p/gdk-Don-t-distribute-generated-files-in-tarballs.patch:
+      Fix regeneration of some generated files
+  * d/tests/python3-gi: Don't fail if gir1.2-gtk-4.0 is installed
+  * d/p/Revert-Update-some-a11y-test-results.patch:
+    Drop patch, no longer needed (and indeed it now makes the tests fail)
+  * d/p/docs-Add-gtk_file_chooser_add_choice-and-related-function.patch,
+    d/p/Fix-a-string-leak.patch:
+    Add post-release fixes from upstream gtk-3-24 branch
+  * d/p/Disable-accessibility-dump-aka-a11ytests-test.patch:
+    Disable accessibility-dump test (aka a11ytests).
+    It works by comparing a dump of the a11y widget tree with a known-good
+    version, but that seems to vary unpredictably according to some unknown
+    factor. Upstream's CI currently disables all the a11y tests, so we can't
+    expect this to be reliable.
+  * Remove another generated file
+  * d/libgail-3-0.symbols: Add Build-Depends-Package
+  * d/libgail-3-doc.doc-base.gail-reference: Use /usr/share/doc paths
+  * Standards-Version: 4.4.0 (no changes required)
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 17 Jul 2019 17:54:17 +0100
+
 gtk+3.0 (3.24.8-1) experimental; urgency=medium
 
   * New upstream release

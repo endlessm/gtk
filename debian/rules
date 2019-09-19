@@ -5,14 +5,6 @@ include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
 include /usr/share/dpkg/default.mk
 include /usr/share/dpkg/pkg-info.mk
 
-# Make debhelper skip the udeb package since it has no use for Endless
-# and somehow makes the armhf build succeed. DH_OPTIONS is normally not
-# suggested, but it has the advantage that both dh and all the dh_*
-# programs will respect it.
-#
-# https://phabricator.endlessm.com/T22286
-export DH_OPTIONS = -N$(UDEB_PKG)
-
 built_binaries := $(shell dh_listpackages)
 all_binaries := $(shell sed -ne 's/^Package: *//p' < debian/control)
 
@@ -98,7 +90,6 @@ debian/%: debian/%.in
 
 configure_flags_common = \
 	--libdir=/$(LIBDIR) \
-	--libexecdir=/usr/libexec \
 	--enable-test-print-backend
 
 configure_flags_deb = \
@@ -128,10 +119,6 @@ ifeq ($(filter %-doc,$(built_binaries)),)
 configure_flags_deb += --disable-gtk-doc --disable-man
 endif
 
-ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
-configure_flags_deb += --enable-egl-x11
-endif
-
 configure_flags_udeb = \
 	--disable-broadway-backend \
 	--disable-wayland-backend \
@@ -145,7 +132,7 @@ configure_flags_udeb = \
 	--disable-xrandr
 
 %:
-	dh $@ --with gir
+	dh $@ --buildsystem=autoconf
 
 override_dh_clean: debian/control
 	# gross kludge to force control generation with the %.in target
@@ -157,6 +144,21 @@ override_dh_clean: debian/control
 	# when resources change. Force an update in case we ship a patch which
 	# modifies the theme CSS files.
 	rm -f gtk/gtkresources.c gtk/gtkresources.h
+	# We just don't want to have to review these...
+	rm -f demos/gtk-demo/demo_resources.[ch]
+	rm -f demos/icon-browser/resources.[ch]
+	rm -f demos/widget-factory/widget_factory_resources.[ch]
+	rm -f docs/reference/gtk/getting_started.xml
+	rm -f examples/application*/resources.[ch]
+	rm -f gdk/gdkenumtypes.[ch]
+	rm -f gdk/gdkmarshalers.[ch]
+	rm -f gdk/gdkresources.[ch]
+	rm -f gtk/gtkmarshalers.[ch]
+	rm -f gtk/gtkprivatetypebuiltins.[ch]
+	rm -f gtk/gtkresources.[ch]
+	rm -f gtk/gtktypebuiltins.[ch]
+	rm -f testsuite/css/style/resources.[ch]
+	rm -f testsuite/gtk/gtkresources.[ch]
 	dh_clean
 
 # Add dependencies to generate files from the debian/*.in ones
@@ -211,7 +213,9 @@ override_dh_install:
 	dh_install --remaining-packages --sourcedir=debian/install/deb
 
 override_dh_missing:
+ifneq ($(filter %-udeb,$(built_binaries)),)
 	dh_missing --sourcedir=debian/install/udeb --list-missing -X.la
+endif
 	dh_missing --sourcedir=debian/install/deb --list-missing -X.la
 
 override_dh_installchangelogs:
@@ -219,10 +223,12 @@ override_dh_installchangelogs:
 
 override_dh_installdocs:
 	dh_installdocs -p$(COMMON_PKG) AUTHORS README NEWS
-	dh_installdocs -p$(DOC_PKG) AUTHORS -X.in
+	# We need to install AUTHORS in /u/s/d/l-doc, not -dev according to
+	# debhelper 11's defaults, otherwise it would have file conflicts
+	dh_installdocs -p$(DOC_PKG) --doc-main-package=$(DOC_PKG) AUTHORS -X.in
 	dh_installdocs --remaining-packages -A AUTHORS
 
 override_dh_makeshlibs:
-	dh_makeshlibs -p$(SHARED_PKG) -V --add-udeb=$(UDEB_PKG) -X$(MODULES_BASE_PATH) -- -c4
-	dh_makeshlibs -plibgail-3-0 -V -- -c4
+	dh_makeshlibs -p$(SHARED_PKG) --add-udeb=$(UDEB_PKG) -X$(MODULES_BASE_PATH) -- -c4
+	dh_makeshlibs -plibgail-3-0 -- -c4
 	dh_makeshlibs --remaining-packages -X$(MODULES_BASE_PATH)

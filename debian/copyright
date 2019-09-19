@@ -5,7 +5,7 @@ Source: https://download.gnome.org/sources/gtk+/
 Files: *
 Copyright: Copyright (C) 1986, 1987, 1998  The Open Group
            Copyright (C) 1993 Robert Nation
-           Copyright (C) 1997-2010 The GTK+ Team
+           Copyright (C) 1997-2010 The GTK Team
            Copyright (C) 1991-1993, 1995, 1999-2010 Free Software Foundation, Inc.
            Copyright (C) 1995, 1996, 1997, 1998 Steffen Beyer
            Copyright (C) 1996-2007, 2009 Sun Microsystems, Inc.
@@ -140,8 +140,8 @@ License: LGPL-2.1+
 
 Files: po/*
        po-properties/*
-Copyright: Copyright (C) 1998-2010 The Free Software Foundation, Inc.
-           Copyright (C) 1999, 2003-2010 The GTK+ Team
+Copyright: Copyright (C) 1998-2019 Free Software Foundation, Inc.
+           Copyright (C) 1999, 2003-2010 The GTK Team
            Copyright (C) 2004 Zuza Software Foundation <info@translate.org.za>
            Copyright (C) 2008-2010 F Wolff <friedel@translate.org.za>
            Copyright (C) 2002 Ge'ez Frontier Foundation <locales@geez.org>
@@ -536,6 +536,16 @@ Copyright: Copyright (C) 1992-1994 The Regents of the University of California.
 License: LGPL-2+ or SWL
 
 Files:
+ modules/input/gtk-text-input.xml
+ modules/input/text-input-unstable-v3.xml
+Copyright:
+ 2012-2013 Intel Corporation
+ 2015-2016 Jan Arne Petersen
+ 2017-2018 Red Hat, Inc.
+ 2018 Purism SPC
+License: X11R5-permissive
+
+Files:
  gdk/broadway/rawinflate.min.js
  debian/missing-sources/zlib.js-0.1.6/*
 Copyright: © 2012 imaya
@@ -576,3 +586,25 @@ License: Apache-2.0
 Comment:
  On Debian systems a copy of the Apache License, Version 2.0 can be
  found in /usr/share/common-licenses/Apache-2.0
+
+License: X11R5-permissive
+ Permission to use, copy, modify, distribute, and sell this
+ software and its documentation for any purpose is hereby granted
+ without fee, provided that the above copyright notice appear in
+ all copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ the copyright holders not be used in advertising or publicity
+ pertaining to distribution of the software without specific,
+ written prior permission.  The copyright holders make no
+ representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied
+ warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.

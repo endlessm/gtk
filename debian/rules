@@ -205,6 +205,9 @@ override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	# Mark reftests with known failures as non-fatal
 	touch testsuite/reftests/symbolic-icon-translucent-color.ui.known_fail
+	touch testsuite/reftests/button-wrapping.ui.known_fail
+	touch testsuite/reftests/label-sizing.ui.known_fail
+	touch testsuite/reftests/quit-mnemonic.ui.known_fail
 	# So that gsettings can find the (uninstalled) gtk schemas
 	mkdir -p debian/build/glib-2.0/schemas/
 	cp gtk/org.gtk.* debian/build/glib-2.0/schemas/

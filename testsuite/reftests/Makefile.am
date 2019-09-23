@@ -63,6 +63,12 @@ gtk_reftest_SOURCES = \
 	gtk-reftest.c			\
 	gtk-reftest.h
 
+EXTRA_DIST += \
+	button-wrapping.ui.known_fail \
+	label-sizing.ui.known_fail \
+	quit-mnemonic.ui.known_fail \
+	$(NULL)
+
 clean-local:
 	rm -rf output/ || true
 

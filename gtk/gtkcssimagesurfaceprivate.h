@@ -42,6 +42,8 @@ struct _GtkCssImageSurface
   cairo_surface_t *cache;               /* the scaled surface - to avoid scaling every time we need to draw */
   double width;                         /* original cache width */
   double height;                        /* original cache height */
+  cairo_filter_t filter;
+  cairo_filter_t cache_filter;
 };
 
 struct _GtkCssImageSurfaceClass
@@ -53,6 +55,8 @@ GType          _gtk_css_image_surface_get_type             (void) G_GNUC_CONST;
 
 GtkCssImage *  _gtk_css_image_surface_new                  (cairo_surface_t *surface);
 GtkCssImage *  _gtk_css_image_surface_new_for_pixbuf       (GdkPixbuf       *pixbuf);
+void           _gtk_css_image_surface_set_filter           (GtkCssImageSurface *image,
+                                                            cairo_filter_t      filter);
 
 G_END_DECLS
 

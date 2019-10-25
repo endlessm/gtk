@@ -57,6 +57,7 @@ gtk_css_image_surface_draw (GtkCssImage *image,
 
   /* Update cache image if size is different */
   if (surface->cache == NULL   ||
+      surface->cache_filter != surface->filter ||
       ABS (width - surface->width) > 0.001 ||
       ABS (height - surface->height) > 0.001)
     {
@@ -85,6 +86,8 @@ gtk_css_image_surface_draw (GtkCssImage *image,
       cairo_rectangle (cache, 0, 0, width, height);
       cairo_scale (cache, width / image_width, height / image_height);
       cairo_set_source_surface (cache, surface->surface, 0, 0);
+      cairo_pattern_set_filter (cairo_get_source (cache), surface->filter);
+      surface->cache_filter = surface->filter;
       cairo_fill (cache);
 
       cairo_destroy (cache);
@@ -160,6 +163,7 @@ _gtk_css_image_surface_class_init (GtkCssImageSurfaceClass *klass)
 static void
 _gtk_css_image_surface_init (GtkCssImageSurface *image_surface)
 {
+  image_surface->filter = CAIRO_FILTER_GOOD;
 }
 
 GtkCssImage *
@@ -192,3 +196,8 @@ _gtk_css_image_surface_new_for_pixbuf (GdkPixbuf *pixbuf)
   return image;
 }
 
+void
+_gtk_css_image_surface_set_filter (GtkCssImageSurface *image, cairo_filter_t filter)
+{
+  image->filter = filter;
+}

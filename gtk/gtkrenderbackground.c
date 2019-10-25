@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "gtkrenderbackgroundprivate.h"
+#include "gtkcssimagesurfaceprivate.h"
 
 #include "gtkcssarrayvalueprivate.h"
 #include "gtkcssbgsizevalueprivate.h"
@@ -147,6 +148,14 @@ _gtk_theming_background_paint_layer (GtkThemingBackground *bg,
 
 
   cairo_save (cr);
+
+  if (GTK_IS_CSS_IMAGE_SURFACE (image))
+    {
+      const GtkCssValue *value;
+      value = gtk_css_style_get_value (bg->style, GTK_CSS_PROPERTY_EOS_CAIRO_FILTER);
+      _gtk_css_image_surface_set_filter (GTK_CSS_IMAGE_SURFACE (image),
+                                         _gtk_css_eos_cairo_filter_get (value));
+    }
 
   _gtk_rounded_box_path (
       &bg->boxes[

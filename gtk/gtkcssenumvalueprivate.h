@@ -91,6 +91,10 @@ GtkCssValue *   _gtk_css_icon_style_value_new         (GtkCssIconStyle    icon_s
 GtkCssValue *   _gtk_css_icon_style_value_try_parse   (GtkCssParser      *parser);
 GtkCssIconStyle _gtk_css_icon_style_value_get         (const GtkCssValue *value);
 
+GtkCssValue *   _gtk_css_eos_cairo_filter_value_new       (cairo_filter_t     filter);
+GtkCssValue *   _gtk_css_eos_cairo_filter_value_try_parse (GtkCssParser      *parser);
+cairo_filter_t  _gtk_css_eos_cairo_filter_get             (const GtkCssValue *value);
+
 G_END_DECLS
 
 #endif /* __GTK_CSS_ENUM_VALUE_PRIVATE_H__ */

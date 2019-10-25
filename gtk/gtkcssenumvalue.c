@@ -1071,3 +1071,58 @@ _gtk_css_icon_style_value_get (const GtkCssValue *value)
 
   return value->value;
 }
+
+/* GtkCssEosCairoFilter */
+
+static const GtkCssValueClass GTK_CSS_VALUE_EOS_CAIRO_FILTER = {
+  gtk_css_value_enum_free,
+  gtk_css_value_enum_compute,
+  gtk_css_value_enum_equal,
+  gtk_css_value_enum_transition,
+  gtk_css_value_enum_print
+};
+
+static GtkCssValue cairo_filter_values[] = {
+  { &GTK_CSS_VALUE_EOS_CAIRO_FILTER, 1, CAIRO_FILTER_FAST, "-eos-fast" },
+  { &GTK_CSS_VALUE_EOS_CAIRO_FILTER, 1, CAIRO_FILTER_GOOD, "-eos-good" },
+  { &GTK_CSS_VALUE_EOS_CAIRO_FILTER, 1, CAIRO_FILTER_BEST, "-eos-best" },
+  { &GTK_CSS_VALUE_EOS_CAIRO_FILTER, 1, CAIRO_FILTER_NEAREST, "-eos-nearest" },
+  { &GTK_CSS_VALUE_EOS_CAIRO_FILTER, 1, CAIRO_FILTER_BILINEAR, "-eos-bilinear" }
+};
+
+GtkCssValue *
+_gtk_css_eos_cairo_filter_value_new (cairo_filter_t filter)
+{
+  guint i;
+
+  for (i = 0; i < G_N_ELEMENTS (cairo_filter_values); i++)
+    {
+      if (cairo_filter_values[i].value == filter)
+        return _gtk_css_value_ref (&cairo_filter_values[i]);
+    }
+
+  g_return_val_if_reached (NULL);
+}
+
+GtkCssValue *
+_gtk_css_eos_cairo_filter_value_try_parse (GtkCssParser *parser)
+{
+  guint i;
+
+  g_return_val_if_fail (parser != NULL, NULL);
+
+  for (i = 0; i < G_N_ELEMENTS (cairo_filter_values); i++)
+    {
+      if (_gtk_css_parser_try (parser, cairo_filter_values[i].name, TRUE))
+        return _gtk_css_value_ref (&cairo_filter_values[i]);
+    }
+
+  return NULL;
+}
+
+cairo_filter_t
+_gtk_css_eos_cairo_filter_get (const GtkCssValue *value)
+{
+  g_return_val_if_fail (value->class == &GTK_CSS_VALUE_EOS_CAIRO_FILTER, CAIRO_FILTER_GOOD);
+  return value->value;
+}

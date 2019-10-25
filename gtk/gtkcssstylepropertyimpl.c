@@ -719,6 +719,17 @@ css_image_value_parse_with_builtin (GtkCssStyleProperty *property,
   return css_image_value_parse (property, parser);
 }
 
+static GtkCssValue *
+cairo_filter_parse (GtkCssStyleProperty *property, GtkCssParser *parser)
+{
+  GtkCssValue *value = _gtk_css_eos_cairo_filter_value_try_parse (parser);
+
+  if (value == NULL)
+    _gtk_css_parser_error (parser, "unknown value for property");
+
+  return value;
+}
+
 static void
 css_image_value_query (GtkCssStyleProperty *property,
                        const GtkCssValue   *css_value,
@@ -1869,4 +1880,13 @@ G_GNUC_END_IGNORE_DEPRECATIONS
                                           color_query,
                                           color_assign,
                                           _gtk_css_color_value_new_current_color ());
+  gtk_css_style_property_register        ("-eos-cairo-filter",
+                                          GTK_CSS_PROPERTY_EOS_CAIRO_FILTER,
+                                          G_TYPE_NONE,
+                                          GTK_STYLE_PROPERTY_INHERIT,
+                                          GTK_CSS_AFFECTS_BACKGROUND,
+                                          cairo_filter_parse,
+                                          NULL,
+                                          NULL,
+                                          _gtk_css_eos_cairo_filter_value_new (CAIRO_FILTER_GOOD));
 }

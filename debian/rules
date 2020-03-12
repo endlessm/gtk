@@ -5,6 +5,14 @@ include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
 include /usr/share/dpkg/default.mk
 include /usr/share/dpkg/pkg-info.mk
 
+# Make debhelper skip the udeb package since it has no use for Endless
+# and somehow makes the armhf build succeed. DH_OPTIONS is normally not
+# suggested, but it has the advantage that both dh and all the dh_*
+# programs will respect it.
+#
+# https://phabricator.endlessm.com/T22286
+export DH_OPTIONS = -N$(UDEB_PKG)
+
 built_binaries := $(shell dh_listpackages)
 all_binaries := $(shell sed -ne 's/^Package: *//p' < debian/control)
 
@@ -117,6 +125,10 @@ endif
 
 ifeq ($(filter %-doc,$(built_binaries)),)
 configure_flags_deb += --disable-gtk-doc --disable-man
+endif
+
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
+configure_flags_deb += --enable-egl-x11
 endif
 
 configure_flags_udeb = \

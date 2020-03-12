@@ -1,3 +1,16 @@
+gtk+3.0 (3.24.14-1endless1) eos; urgency=medium
+
+  * Re-apply Endless customizations:
+    + Enable EGL X11 on ARM builds
+    + Don't build udeb package
+    + Add startup notification ID API to symbols file
+    + Drop debian patches (they are applied in the source tree) (T28856)
+      - our source branch was fast forwarded to the gtk-3-24 branch commit
+        bf315637e4 which is a few commits after 4c027d458b used in the
+        upstream packaging
+
+ -- Andre Moreira Magalhaes <andre@endlessm.com>  Thu, 12 Mar 2020 14:36:21 -0300
+
 gtk+3.0 (3.24.14-1) unstable; urgency=medium
 
   * Team upload

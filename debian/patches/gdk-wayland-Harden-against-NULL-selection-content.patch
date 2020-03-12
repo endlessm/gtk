@@ -1,0 +1,37 @@
+From: Carlos Garnacho <carlosg@gnome.org>
+Date: Thu, 20 Feb 2020 11:36:51 +0100
+Subject: gdk/wayland: Harden against NULL selection content
+
+If NULL is returned, probably the client shouldn't advertise the
+mimetype. Make it sure we forget entirely about the attempt to
+cache this mimetype, as it'll be mistaken as pending otherwise.
+
+Dropping this cached selection will in consequence close the fd
+of all pending readers, which seems appropriate for NULL content.
+
+Bug: https://gitlab.gnome.org/GNOME/gtk/issues/2456
+Origin: upstream, 3.24.15
+---
+ gdk/wayland/gdkselection-wayland.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/gdk/wayland/gdkselection-wayland.c b/gdk/wayland/gdkselection-wayland.c
+index b675437..0dd3aa9 100644
+--- a/gdk/wayland/gdkselection-wayland.c
++++ b/gdk/wayland/gdkselection-wayland.c
+@@ -860,7 +860,14 @@ gdk_wayland_selection_store (GdkWindow    *window,
+     }
+ 
+   stored_selection_add_data (stored_selection, mode, data, len);
+-  stored_selection_notify_write (stored_selection);
++
++  if (stored_selection->data)
++    stored_selection_notify_write (stored_selection);
++  else
++    {
++      g_ptr_array_remove_fast (selection->stored_selections,
++                               stored_selection);
++    }
+ 
+   /* Handle the next GDK_SELECTION_REQUEST / store, if any */
+   selection->current_request_selection = GDK_NONE;

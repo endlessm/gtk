@@ -1,13 +1,56 @@
-gtk+3.0 (3.24.11-1endless0) UNRELEASED; urgency=medium
+gtk+3.0 (3.24.14-1) unstable; urgency=medium
 
-  * Update to Debian's 3.24.11-1. https://phabricator.endlessm.com/T27556
-  * Reapply existing downstream patches:
-    * Move gtk-encode-symbolic-svg to gtk-3-bin for backwards compatibility
-    * Enable EGL X11 on ARM builds
-    * Don't build udeb package
-    * Add startup notification ID API to symbols file
+  * Team upload
+  * New upstream release
+    - Update Wayland dependency version
+  * d/patches: Apply upstream bug fixes from gtk-3-24 branch up to
+    3.24.14-20-g4c027d458b
+  * d/tests/build: Use correct compiler for proposed autopkgtest
+    cross-architecture testing support, based on a patch for clutter-1.0
+    by Steve Langasek
+  * d/tests/build: Fix shellcheck warnings
+  * d/tests/build: Remove trailing whitespace
+  * d/tests/build: Show commands before they are executed
+  * d/tests/build: Fail if using an undefined variable ("unofficial strict
+    mode")
+  * d/upstream/metadata: Add upstream URLs
+  * Standards-Version: 4.5.0 (no changes required)
 
- -- Philip Chimento <philip@endlessm.com>  Thu, 19 Sep 2019 16:17:41 -0700
+ -- Simon McVittie <smcv@debian.org>  Sat, 29 Feb 2020 20:34:56 +0000
+
+gtk+3.0 (3.24.13-1) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * Move gtk-encode-symbolic-svg from gtk-3-examples to libgtk-3-bin.
+    It's more of a development tool than an example.
+
+  [ Iain Lane ]
+  * New upstream release
+    + listbox: Fix header row reuse
+    + wayland: Fix handling of tablets
+    + theme:
+      - Adwaita: Fix menu rounding
+      - Adwaita: Various improvements for the Emoji chooser
+      - Adwaita: Refresh check and radio buttons
+      - HighContrast: Fix entry colors
+    + input:
+      - Properly handle bubbling of scroll events
+      - Handle modifier key events properly
+      - Run key controllers in the bubble phase
+      - Do not use VIQR for Vietnamese by default
+    + statusicons: Render sharply on hi-dpi
+    + wayland: Fix handling of selection ownership
+    + broadway: Fix (lack of) clipboard handling
+  * Rebase patches
+    - Drop 022_disable-viqr-im-for-vi-locale.patch, upstream
+
+ -- Iain Lane <laney@debian.org>  Thu, 28 Nov 2019 14:09:42 +0000
+
+gtk+3.0 (3.24.12-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 05 Oct 2019 09:49:40 -0400
 
 gtk+3.0 (3.24.11-1) unstable; urgency=medium
 
@@ -992,7 +1035,8 @@ gtk+3.0 (3.20.1-1) experimental; urgency=medium
   * New upstream release.
   * Drop debian/patches/git_a11y_GTK_CSD_distcheck.patch, included in release.
   * Add debian/patches/git_fix_emacs.patch, cherry-picked from upstream git.
-    Thanks to Matteo F. Vescovi for verifying the commit fixed the emacs problem.
+    Thanks to Matteo F. Vescovi for verifying the commit fixed the emacs
+    problem.
 
  -- Andreas Henriksson <andreas@fatal.se>  Wed, 30 Mar 2016 11:08:26 +0200
 

@@ -1,0 +1,34 @@
+From: =?utf-8?q?Florian_M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Tue, 18 Feb 2020 20:34:01 +0100
+Subject: Adwaita: Leave .circular .osd buttons alone!
+
+.osd suggests a particular color/background/hover style, while .circular
+only suggests roundness. So for buttons that use both classes, make sure
+the former takes precedence with regard to background/hover.
+
+Origin: upstream, 3.24.15
+---
+ gtk/theme/Adwaita/_common.scss | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/gtk/theme/Adwaita/_common.scss b/gtk/theme/Adwaita/_common.scss
+index e6d0f5a..03a94d2 100644
+--- a/gtk/theme/Adwaita/_common.scss
++++ b/gtk/theme/Adwaita/_common.scss
+@@ -920,14 +920,14 @@ button {
+ 
+     $_border_bg: linear-gradient(to top, $alt-borders-color 25%, $borders-color 50%);
+ 
+-    &:not(.flat):not(:checked):not(:active):not(:disabled):not(:backdrop) {
++    &:not(.flat):not(.osd):not(:checked):not(:active):not(:disabled):not(:backdrop) {
+       @include button(normal);
+ 
+       background-image: $button_fill, $_border_bg;
+       border-color: transparent;
+     }
+ 
+-    &:hover:not(:checked):not(:active):not(:disabled):not(:backdrop) {
++    &:hover:not(.osd):not(:checked):not(:active):not(:disabled):not(:backdrop) {
+       @include button(hover);
+ 
+       background-image: $button_fill, $_border_bg;

@@ -1,0 +1,79 @@
+From: Lukas K <lu@0x83.eu>
+Date: Tue, 25 Feb 2020 22:54:00 +0100
+Subject: css: add support for font-feature-settings
+
+---
+ gtk/gtkcssstyle.c             |  8 ++++++++
+ gtk/gtkcssstylepropertyimpl.c | 15 +++++++++++++++
+ gtk/gtkcsstypesprivate.h      |  1 +
+ 3 files changed, 24 insertions(+)
+
+diff --git a/gtk/gtkcssstyle.c b/gtk/gtkcssstyle.c
+index 1d607d8..3e444bb 100644
+--- a/gtk/gtkcssstyle.c
++++ b/gtk/gtkcssstyle.c
+@@ -227,6 +227,7 @@ gtk_css_style_get_pango_attributes (GtkCssStyle *style)
+   const GdkRGBA *color;
+   const GdkRGBA *decoration_color;
+   gint letter_spacing;
++  const char *font_feature_settings;
+ 
+   /* text-decoration */
+   decoration_line = _gtk_css_text_decoration_line_value_get (gtk_css_style_get_value (style, GTK_CSS_PROPERTY_TEXT_DECORATION_LINE));
+@@ -262,6 +263,13 @@ gtk_css_style_get_pango_attributes (GtkCssStyle *style)
+       attrs = add_pango_attr (attrs, pango_attr_letter_spacing_new (letter_spacing * PANGO_SCALE));
+     }
+ 
++  /* font-feature-settings */
++  font_feature_settings = _gtk_css_string_value_get (gtk_css_style_get_value (style, GTK_CSS_PROPERTY_FONT_FEATURE_SETTINGS));
++  if (font_feature_settings != NULL)
++    {
++      attrs = add_pango_attr (attrs, pango_attr_font_features_new (font_feature_settings));
++    }
++
+   return attrs;
+ }
+ 
+diff --git a/gtk/gtkcssstylepropertyimpl.c b/gtk/gtkcssstylepropertyimpl.c
+index 9fd506a..dd0aa85 100644
+--- a/gtk/gtkcssstylepropertyimpl.c
++++ b/gtk/gtkcssstylepropertyimpl.c
+@@ -471,6 +471,12 @@ opacity_query (GtkCssStyleProperty *property,
+   g_value_set_double (value, _gtk_css_number_value_get (css_value, 100));
+ }
+ 
++static GtkCssValue *
++parse_font_feature_settings (GtkCssStyleProperty *property,
++                      GtkCssParser        *parser)
++{
++  return _gtk_css_string_value_parse (parser);
++}
+ 
+ static GtkCssValue *
+ parse_one_css_play_state (GtkCssParser *parser)
+@@ -1869,4 +1875,13 @@ G_GNUC_END_IGNORE_DEPRECATIONS
+                                           color_query,
+                                           color_assign,
+                                           _gtk_css_color_value_new_current_color ());
++  gtk_css_style_property_register        ("font-feature-settings",
++                                          GTK_CSS_PROPERTY_FONT_FEATURE_SETTINGS,
++                                          G_TYPE_NONE,
++                                          GTK_STYLE_PROPERTY_INHERIT | GTK_STYLE_PROPERTY_ANIMATED,
++                                          GTK_CSS_AFFECTS_TEXT | GTK_CSS_AFFECTS_TEXT_ATTRS,
++                                          parse_font_feature_settings,
++                                          NULL,
++                                          NULL,
++                                          _gtk_css_string_value_new (""));
+ }
+diff --git a/gtk/gtkcsstypesprivate.h b/gtk/gtkcsstypesprivate.h
+index 59f392a..a0540e0 100644
+--- a/gtk/gtkcsstypesprivate.h
++++ b/gtk/gtkcsstypesprivate.h
+@@ -227,6 +227,7 @@ enum { /*< skip >*/
+   GTK_CSS_PROPERTY_GTK_KEY_BINDINGS,
+   GTK_CSS_PROPERTY_CARET_COLOR,
+   GTK_CSS_PROPERTY_SECONDARY_CARET_COLOR,
++  GTK_CSS_PROPERTY_FONT_FEATURE_SETTINGS,
+   /* add more */
+   GTK_CSS_PROPERTY_N_PROPERTIES
+ };

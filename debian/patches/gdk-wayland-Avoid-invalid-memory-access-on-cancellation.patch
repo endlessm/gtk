@@ -1,0 +1,38 @@
+From: Carlos Garnacho <carlosg@gnome.org>
+Date: Thu, 20 Feb 2020 14:03:50 +0100
+Subject: gdk/wayland: Avoid invalid memory access on cancellation
+
+The only way to have G_IO_ERROR_CANCELLED in the write callback
+goes through having the array of pending writers already cleared.
+It should not access the invalid AsyncWriteData and StoredSelection
+in that case.
+
+Origin: upstream, 3.24.15
+---
+ gdk/wayland/gdkselection-wayland.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/gdk/wayland/gdkselection-wayland.c b/gdk/wayland/gdkselection-wayland.c
+index d8cb2b8..b675437 100644
+--- a/gdk/wayland/gdkselection-wayland.c
++++ b/gdk/wayland/gdkselection-wayland.c
+@@ -734,13 +734,14 @@ async_write_data_cb (GObject      *object,
+                                                 res, &error);
+   if (error)
+     {
+-      if (error->domain != G_IO_ERROR ||
+-          error->code != G_IO_ERROR_CANCELLED)
+-        g_warning ("Error writing selection data: %s", error->message);
++      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
++        {
++          g_warning ("Error writing selection data: %s", error->message);
++          g_ptr_array_remove_fast (write_data->stored_selection->pending_writes,
++                                   write_data);
++        }
+ 
+       g_error_free (error);
+-      g_ptr_array_remove_fast (write_data->stored_selection->pending_writes,
+-                               write_data);
+       return;
+     }
+ 

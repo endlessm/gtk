@@ -30,7 +30,7 @@ Build-Depends: adwaita-icon-theme <!nocheck>,
                libjson-glib-dev,
                libpango1.0-dev (>= 1.41.0),
                librest-dev,
-               libwayland-dev (>= 1.9.91) [linux-any],
+               libwayland-dev (>= 1.14.91) [linux-any],
                libx11-dev,
                libxcomposite-dev,
                libxcursor-dev,
@@ -55,7 +55,7 @@ Build-Depends-Indep: docbook-xml,
                      libpango1.0-doc,
                      xsltproc
 Rules-Requires-Root: no
-Standards-Version: 4.4.0
+Standards-Version: 4.5.0
 Vcs-Browser: https://salsa.debian.org/gnome-team/gtk3
 Vcs-Git: https://salsa.debian.org/gnome-team/gtk3.git
 Homepage: https://www.gtk.org/
@@ -123,6 +123,8 @@ Depends: gtk-update-icon-cache,
          ${shlibs:Depends},
          @COMMON_PKG@ (>= ${source:Version}),
          @SHARED_PKG@ (>= ${source:Version})
+Breaks: @EXAMPLES_PKG@ (<< 3.24.13)
+Replaces: @EXAMPLES_PKG@ (<< 3.24.13)
 Description: programs for the GTK graphical user interface library
  GTK is a multi-platform toolkit for creating graphical user
  interfaces. Offering a complete set of widgets, GTK is suitable

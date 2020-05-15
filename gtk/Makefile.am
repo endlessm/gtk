@@ -1362,7 +1362,6 @@ adwaita_theme_scss = \
 	theme/Adwaita/_colors.scss 		\
 	theme/Adwaita/_common.scss 		\
 	theme/Adwaita/_drawing.scss 		\
-	theme/Adwaita/_endless.scss 		\
 	theme/Adwaita/gtk-contained-dark.scss 	\
 	theme/Adwaita/gtk-contained.scss 	\
 	$()

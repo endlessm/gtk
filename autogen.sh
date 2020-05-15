@@ -44,8 +44,13 @@ fi
 
 # These reftests fail on Jenkins
 touch testsuite/reftests/button-wrapping.ui.known_fail
+touch testsuite/reftests/cellrenderer-pixbuf-stock-rtl.ui.known_fail
+touch testsuite/reftests/flipping-icons.ui.known_fail
 touch testsuite/reftests/label-sizing.ui.known_fail
+touch testsuite/reftests/label-wrap-justify.ui.known_fail
 touch testsuite/reftests/quit-mnemonic.ui.known_fail
+touch testsuite/reftests/symbolic-icon-translucent-color.ui.known_fail
+touch testsuite/reftests/window-height-for-width.ui.known_fail
 
 cd "$olddir"
 test -n "$NOCONFIGURE" || "$srcdir/configure" "$@"

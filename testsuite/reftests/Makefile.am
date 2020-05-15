@@ -65,8 +65,13 @@ gtk_reftest_SOURCES = \
 
 EXTRA_DIST += \
 	button-wrapping.ui.known_fail \
+	cellrenderer-pixbuf-stock-rtl.ui.known_fail \
+	flipping-icons.ui.known_fail \
 	label-sizing.ui.known_fail \
+	label-wrap-justify.ui.known_fail \
 	quit-mnemonic.ui.known_fail \
+	symbolic-icon-translucent-color.ui.known_fail \
+	window-height-for-width.ui.known_fail \
 	$(NULL)
 
 clean-local:
